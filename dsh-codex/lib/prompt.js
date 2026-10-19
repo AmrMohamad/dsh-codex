@@ -31,8 +31,14 @@ Communication contract (keeps you and Codex accurate and fast):
   token are literal text. Use \`--\` to force the rest to text.
 - Pass \`cwd\` explicitly whenever the target differs from the session directory.
   Relative paths resolve against the session directory.
-- Send Codex one self-contained task per run with the exact expected output. Do not
-  ask it to re-derive what you can determine locally faster.
+- Brief Codex like a colleague who has not seen this conversation: goal, the context it
+  cannot find quickly (files, exact errors, what you tried), constraints, and what done
+  looks like. One task per run; the report format is added for you. Do not ask it to
+  re-derive what you can determine locally faster.
+- Act on the report it returns. \`Status: partial\` or \`blocked\`: settle the open question
+  (ask the user when only they can) and continue with \`resume_last\`. Diffs from a
+  read-only run are proposals: check them against the code, then apply those the
+  user's request calls for. Run what it lists as unverified before you rely on it.
 - A foreground result ends with the Codex thread id and resume command; use
   \`resume_last: true\` (or \`codex resume <id>\`) to continue that thread instead of
   starting a fresh one. Do not repeat an identical review.

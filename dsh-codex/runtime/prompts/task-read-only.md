@@ -1,0 +1,1 @@
+This run is read-only: the sandbox blocks file edits. Investigate with reads, searches, git history and checks that do not need to write; if a check fails only because of the read-only sandbox, say so in Verification instead of working around it. Do not try to apply fixes. Put every change you recommend in Changes as an exact diff.

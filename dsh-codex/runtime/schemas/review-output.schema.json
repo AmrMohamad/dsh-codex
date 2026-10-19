@@ -3,23 +3,13 @@
   "type": "object",
   "additionalProperties": false,
   "required": [
+    "findings",
+    "residual_risks",
     "verdict",
     "summary",
-    "findings",
     "next_steps"
   ],
   "properties": {
-    "verdict": {
-      "type": "string",
-      "enum": [
-        "approve",
-        "needs-attention"
-      ]
-    },
-    "summary": {
-      "type": "string",
-      "minLength": 1
-    },
     "findings": {
       "type": "array",
       "items": {
@@ -28,12 +18,14 @@
         "required": [
           "severity",
           "title",
-          "body",
           "file",
           "line_start",
           "line_end",
-          "confidence",
-          "recommendation"
+          "failure_scenario",
+          "body",
+          "recommendation",
+          "verification",
+          "confidence"
         ],
         "properties": {
           "severity": {
@@ -49,10 +41,6 @@
             "type": "string",
             "minLength": 1
           },
-          "body": {
-            "type": "string",
-            "minLength": 1
-          },
           "file": {
             "type": "string",
             "minLength": 1
@@ -65,16 +53,45 @@
             "type": "integer",
             "minimum": 1
           },
+          "failure_scenario": {
+            "type": "string",
+            "minLength": 1
+          },
+          "body": {
+            "type": "string",
+            "minLength": 1
+          },
+          "recommendation": {
+            "type": "string"
+          },
+          "verification": {
+            "type": "string"
+          },
           "confidence": {
             "type": "number",
             "minimum": 0,
             "maximum": 1
-          },
-          "recommendation": {
-            "type": "string"
           }
         }
       }
+    },
+    "residual_risks": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "verdict": {
+      "type": "string",
+      "enum": [
+        "approve",
+        "needs-attention"
+      ]
+    },
+    "summary": {
+      "type": "string",
+      "minLength": 1
     },
     "next_steps": {
       "type": "array",

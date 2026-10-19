@@ -40,6 +40,10 @@ function validateReviewResultShape(data) {
   return null;
 }
 
+function optionalText(value) {
+  return typeof value === "string" ? value.trim() : "";
+}
+
 function normalizeReviewFinding(finding, index) {
   const source = finding && typeof finding === "object" && !Array.isArray(finding) ? finding : {};
   const lineStart = Number.isInteger(source.line_start) && source.line_start > 0 ? source.line_start : null;
@@ -47,7 +51,11 @@ function normalizeReviewFinding(finding, index) {
     Number.isInteger(source.line_end) && source.line_end > 0 && (!lineStart || source.line_end >= lineStart)
       ? source.line_end
       : lineStart;
+  const confidence =
+    typeof source.confidence === "number" && source.confidence >= 0 && source.confidence <= 1 ? source.confidence : null;
 
+  // failure_scenario and verification are newer schema fields; records
+  // stored before them still render.
   return {
     severity: typeof source.severity === "string" && source.severity.trim() ? source.severity.trim() : "low",
     title: typeof source.title === "string" && source.title.trim() ? source.title.trim() : `Finding ${index + 1}`,
@@ -55,8 +63,17 @@ function normalizeReviewFinding(finding, index) {
     file: typeof source.file === "string" && source.file.trim() ? source.file.trim() : "unknown",
     line_start: lineStart,
     line_end: lineEnd,
-    recommendation: typeof source.recommendation === "string" ? source.recommendation.trim() : ""
+    failure_scenario: optionalText(source.failure_scenario),
+    recommendation: optionalText(source.recommendation),
+    verification: optionalText(source.verification),
+    confidence
   };
+}
+
+function cleanStringList(values) {
+  return (Array.isArray(values) ? values : [])
+    .filter((value) => typeof value === "string" && value.trim())
+    .map((value) => value.trim());
 }
 
 function normalizeReviewResultData(data) {
@@ -64,10 +81,21 @@ function normalizeReviewResultData(data) {
     verdict: data.verdict.trim(),
     summary: data.summary.trim(),
     findings: data.findings.map((finding, index) => normalizeReviewFinding(finding, index)),
-    next_steps: data.next_steps
-      .filter((step) => typeof step === "string" && step.trim())
-      .map((step) => step.trim())
+    residual_risks: cleanStringList(data.residual_risks),
+    next_steps: cleanStringList(data.next_steps)
   };
+}
+
+/** "1 critical, 2 high" in severity order; empty severities are omitted. */
+function severityCounts(findings) {
+  const counts = new Map();
+  for (const finding of findings) {
+    counts.set(finding.severity, (counts.get(finding.severity) ?? 0) + 1);
+  }
+  return [...counts.entries()]
+    .sort((left, right) => severityRank(left[0]) - severityRank(right[0]))
+    .map(([severity, count]) => `${count} ${severity}`)
+    .join(", ");
 }
 
 function isStructuredReviewStoredResult(storedJob) {
@@ -163,6 +191,19 @@ function pushJobDetails(lines, job, options = {}) {
   }
 }
 
+/**
+ * First non-empty line that is not a Markdown heading, for job summaries. A
+ * task report starts with "## Outcome"; the useful summary is the
+ * "Status: … — …" line under it.
+ */
+export function firstMeaningfulLine(text, fallback) {
+  const line = String(text ?? "")
+    .split(/\r?\n/)
+    .map((value) => value.trim())
+    .find((value) => value && !/^#{1,6}\s/.test(value));
+  return line ?? fallback;
+}
+
 function appendReasoningSection(lines, reasoningSummary) {
   if (!Array.isArray(reasoningSummary) || reasoningSummary.length === 0) {
     return;
@@ -247,36 +288,54 @@ export function renderReviewResult(parsedResult, meta) {
   }
 
   const data = normalizeReviewResultData(parsedResult.parsed);
-  const findings = [...data.findings].sort((left, right) => severityRank(left.severity) - severityRank(right.severity));
+  // Severity first, then the most confident; ids follow this order so the
+  // calling agent and the user can say "fix F2".
+  const findings = [...data.findings].sort(
+    (left, right) =>
+      severityRank(left.severity) - severityRank(right.severity) || (right.confidence ?? 0) - (left.confidence ?? 0)
+  );
+  const tally =
+    findings.length === 0
+      ? "no findings"
+      : `${findings.length} finding${findings.length === 1 ? "" : "s"}: ${severityCounts(findings)}`;
   const lines = [
     `# Codex ${meta.reviewLabel}`,
     "",
     `Target: ${meta.targetLabel}`,
-    `Verdict: ${data.verdict}`,
+    `Verdict: ${data.verdict} (${tally})`,
     "",
     data.summary,
+    "",
+    "## Findings",
     ""
   ];
 
   if (findings.length === 0) {
-    lines.push("No material findings.");
-  } else {
-    lines.push("Findings:");
-    for (const finding of findings) {
-      const lineSuffix = formatLineRange(finding);
-      lines.push(`- [${finding.severity}] ${finding.title} (${finding.file}${lineSuffix})`);
-      lines.push(`  ${finding.body}`);
-      if (finding.recommendation) {
-        lines.push(`  Recommendation: ${finding.recommendation}`);
-      }
+    lines.push("None. Codex found no material issues in this target.");
+  }
+  findings.forEach((finding, index) => {
+    const confidence = finding.confidence === null ? "" : ` · confidence ${finding.confidence.toFixed(2)}`;
+    lines.push(`### F${index + 1} · ${finding.severity}${confidence} — ${finding.title}`);
+    lines.push(`Location: \`${finding.file}${formatLineRange(finding)}\``);
+    if (finding.failure_scenario) {
+      lines.push(`Scenario: ${finding.failure_scenario}`);
     }
+    lines.push(`Why: ${finding.body}`);
+    if (finding.recommendation) {
+      lines.push(`Fix: ${finding.recommendation}`);
+    }
+    if (finding.verification) {
+      lines.push(`Verify: ${finding.verification}`);
+    }
+    lines.push("");
+  });
+
+  if (data.residual_risks.length > 0) {
+    lines.push("## Residual risks", "", ...data.residual_risks.map((risk) => `- ${risk}`), "");
   }
 
   if (data.next_steps.length > 0) {
-    lines.push("", "Next steps:");
-    for (const step of data.next_steps) {
-      lines.push(`- ${step}`);
-    }
+    lines.push("## Next steps", "", ...data.next_steps.map((step, index) => `${index + 1}. ${step}`));
   }
 
   appendReasoningSection(lines, meta.reasoningSummary);
@@ -295,6 +354,11 @@ export function renderNativeReviewResult(result, meta) {
   ];
 
   if (stdout) {
+    if (/\[P[0-3]\]/.test(stdout)) {
+      // Codex's native reviewer tags findings with priorities; spell them out
+      // for the calling agent.
+      lines.push("Priorities: [P0] blocks release · [P1] fix next · [P2] fix eventually · [P3] nice to have", "");
+    }
     lines.push(stdout);
   } else if (result.status === 0) {
     lines.push("Codex review completed without any stdout output.");
@@ -318,7 +382,9 @@ export function renderTaskResult(parsedResult, meta) {
     : String(parsedResult?.failureMessage ?? "").trim() || "Codex did not return a final message.";
   const lines = [message];
   if (Array.isArray(meta?.touchedFiles) && meta.touchedFiles.length > 0) {
-    lines.push("", "Touched files:", ...meta.touchedFiles.map((file) => `- ${file}`));
+    // Observed from Codex's file-change events, independent of what the
+    // report itself claims.
+    lines.push("", "Files Codex edited (observed):", ...meta.touchedFiles.map((file) => `- ${file}`));
   }
   if (meta?.write) {
     lines.push(

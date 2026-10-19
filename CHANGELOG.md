@@ -6,6 +6,22 @@ Research-driven hardening: the upstream issue trackers of similar bridges were s
 and every applicable failure mode was checked against this repo
 ([docs/RESEARCH.md](docs/RESEARCH.md)).
 
+### Prompts and results (DeepSeek ↔ Codex), see [docs/PROMPTS.md](docs/PROMPTS.md)
+
+- Delegated tasks are wrapped in a task envelope: the brief verbatim, access rules
+  (read-only runs return exact diffs; write runs make the smallest complete change and
+  never commit), working rules, and a fixed handoff report: Outcome
+  (`Status: done | partial | blocked`), Details, Changes, Verification, Risks and open
+  questions, Next steps. Job summaries show the Status line.
+- Adversarial review: defined severity and confidence scales, new `failure_scenario`,
+  `verification` and `residual_risks` fields, reasoning-first schema order; findings render
+  as `F1..Fn` with confidence, location, scenario, fix and verify.
+- Native review output gets a P0–P3 legend; edited files are labelled as observed.
+- Tool descriptions, the prompt section and both skills now teach the brief (goal, context,
+  constraints, done-when) and how to act on each result. The unused Claude stop-gate prompt
+  is removed.
+- End-to-end tests run the real companion and broker against a fake `codex app-server`.
+
 ### Fixed (vendored runtime, each with a regression test)
 
 - Turn capture hung forever when the start response had no `turn.id` (upstream #781).

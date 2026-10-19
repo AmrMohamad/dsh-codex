@@ -4,7 +4,7 @@
 
 <p>
   <a href="#install"><img src="https://img.shields.io/badge/install-one%20bundle-4f7cff?style=flat-square" alt="install" /></a>
-  <img src="https://img.shields.io/badge/tests-83%20passing-brightgreen?style=flat-square" alt="83 tests passing" />
+  <img src="https://img.shields.io/badge/tests-96%20passing-brightgreen?style=flat-square" alt="96 tests passing" />
   <img src="https://img.shields.io/badge/license-Apache--2.0-blue?style=flat-square" alt="Apache-2.0" />
   <img src="https://img.shields.io/badge/Codex%20CLI-0.163-black?style=flat-square" alt="Codex CLI 0.163" />
   <img src="https://img.shields.io/badge/DeepSeek%20Harness-0.2.1--rc.2-4f7cff?style=flat-square" alt="DeepSeek Harness 0.2.1-rc.2" />
@@ -48,8 +48,12 @@ tool registry, background-job model, approval service, prompt assembly, and skil
 - **It survives reality.** Stale brokers, crashed app-servers, cancelled turns, duplicate commands,
   symlinked credentials, token-refresh oddities: found, reproduced, fixed, regression-tested.
 - **Reviewed by Codex itself.** Three independent review passes plus a delegated audit found
-  **10 P1 / 26 P2** issues in this plugin. All fixed. **83 hermetic tests** guard the fixes.
+  **10 P1 / 26 P2** issues in this plugin. All fixed. **96 hermetic tests** guard the fixes.
   [The whole bloodbath is public.](docs/REVIEW.md)
+- **Answers an agent can act on.** Every delegated task comes back as the same handoff
+  report: status, evidence with `file:line`, changes or exact diffs, what was verified,
+  open questions, next steps. Adversarial findings carry severity, confidence, a failure
+  scenario, a fix and a test. [Prompt design.](docs/PROMPTS.md)
 - **Learns from the neighbours.** Bugs reported against similar bridges (the upstream Codex
   plugin included) were checked against this code; the ones that applied are fixed and
   regression-tested. [Research notes.](docs/RESEARCH.md)
@@ -142,7 +146,7 @@ turn in the broker, even if the turn id had not been persisted yet.
 | Works against Codex 0.163 | Live runs: auth, native review, adversarial review, delegated task, resume, background + cancel. |
 | Native DSH integration | Tools, commands, skills, prompt section and jobs visible in a live profile; plugin row `applied` without warnings. |
 | Hardened | 10 P1 / 26 P2 review findings fixed across 5 review rounds — [docs/REVIEW.md](docs/REVIEW.md), [independent reviewer](docs/internal-review.md). |
-| Tested | `npm test` → **83/83** (fake Harness context/jobs/runner; no Codex calls). |
+| Tested | `npm test` → **96/96** (fake Harness context/jobs/runner, plus end-to-end runs against a fake `codex app-server`; no Codex calls). |
 | Portable | Node and Codex are auto-discovered (Electron Host included), with documented overrides. |
 
 ## Install

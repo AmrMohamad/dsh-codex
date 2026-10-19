@@ -1,19 +1,42 @@
 ---
 name: codex-result-handling
-description: How to present OpenAI Codex review and task output in DeepSeek Harness without overstepping.
+description: How to read, report, and act on OpenAI Codex task reports and review findings in DeepSeek Harness without overstepping.
 ---
 
 # Handling Codex output
 
-When a Codex tool returns output:
+Each Codex tool returns a fixed format. Read it by section, keep its structure when you
+report to the user, and act on it as below.
 
-- Preserve the helper's verdict, summary, findings, and next steps structure.
-- For reviews, present findings first, ordered by severity, with the file paths and line
-  numbers exactly as Codex reported them.
-- Preserve evidence boundaries: if Codex marked something as an inference, uncertainty,
-  or follow-up question, keep that distinction.
+## Task reports (`codex_rescue`)
+
+Codex answers with these sections, in order:
+
+| Section | What to do with it |
+| --- | --- |
+| `## Outcome` (`Status: done / partial / blocked — …`) | Lead with this line when reporting. `partial` or `blocked`: settle the open question (ask the user when only they can decide) and continue with `resume_last` plus the answer. Do not re-run the whole task. |
+| `## Details` | The evidence. Keep the `path:line` references and the "Inference:" labels. Do not restate inferences as facts. |
+| `## Changes` | Write run: the edits Codex made; compare with "Files Codex edited (observed)", which comes from the actual file-change events. Read-only run: exact diffs. Check each against the code, then apply the ones the user's request calls for. |
+| `## Verification` | Trust only what Codex ran. Anything listed as unverified, run it yourself before relying on it, or tell the user it is unverified. |
+| `## Risks and open questions` | Surface decisions that need the user. Carry the rest into your own work. |
+| `## Next steps` | Your action list. Do the ones in scope; offer the rest. |
+
+If a report lacks these sections (for example an older Codex), use it as it is and say
+what is missing rather than guessing.
+
+## Review output
+
+- `codex_adversarial_review` returns `Verdict: approve | needs-attention (counts)` and
+  findings `F1..Fn`, ordered by severity, then confidence. Each finding has severity,
+  confidence (0 to 1), location, scenario, why, fix, and verify. Refer to findings by id
+  ("F2") so the user can choose. Confidence 0.6 to 0.8 means one step is inferred; below
+  0.6 the finding rests on assumptions it states. Say so when you relay it. Also report
+  `Residual risks`: they are what the review did not cover.
+- `codex_review` (native reviewer) tags findings `[P0]` (blocks release) to `[P3]` (nice to
+  have), each with a file and line range. Present them in that order.
+- Preserve the verdict, summary, findings, and next steps structure. Keep file paths and
+  line numbers exactly as Codex reported them.
 - If there are no findings, say so explicitly and keep the residual-risk note brief.
-- If Codex made edits, say so explicitly and list the touched files it reported.
 - If Codex reports malformed output or a failed run, include the most actionable error
   lines and stop there instead of guessing.
 
@@ -36,7 +59,7 @@ When a Codex tool returns output:
 - Background results carry a Harness job id; `codex_result <id>` returns the durable
   output plus the Codex thread id. Quote the job id when the user may want to inspect
   or cancel the run.
-- `write: true` runs may have edited files: say so, list the reported touched files, and
+- `write: true` runs may have edited files: say so, list the files Codex edited, and
   recommend reviewing the diff before relying on the change.
 
 ## Background runs

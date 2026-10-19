@@ -175,8 +175,9 @@ Full details: [`docs/REVIEW.md`](../docs/REVIEW.md).
 
 ## Verification
 
-- `npm test` — 83 hermetic tests (fake Harness context, jobs registry and runner; no
-  real Codex calls), including regression tests from the review rounds and for every
+- `npm test` — 96 hermetic tests (fake Harness context, jobs registry and runner; no
+  real Codex calls; end-to-end runs use `test/fixtures/fake-codex.mjs`), including
+  prompt/report contract tests, regression tests from the review rounds, and tests for every
   applicable upstream issue (`test/upstream-fixes.test.mjs`, see `docs/RESEARCH.md`).
 - Live on this machine: `codex_setup`, a background `codex_review` that found a seeded
   P1, cross-workspace `codex_result`, a foreground `codex_rescue`, an adversarial

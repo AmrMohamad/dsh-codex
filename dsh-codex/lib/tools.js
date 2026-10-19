@@ -70,7 +70,8 @@ export function createTools(operations) {
       "codex_adversarial_review",
       "Run a read-only, steerable OpenAI Codex review that challenges the implementation approach, design choices, " +
         "tradeoffs, and assumptions rather than only chasing implementation bugs. Pass the user's concern in `focus`. " +
-        "Use background:true for long reviews.",
+        "Returns a verdict and findings F1..Fn, each with severity, confidence, location, failure scenario, fix and a " +
+        "verification test, plus residual risks and next steps. Use background:true for long reviews.",
       {
         background,
         base,
@@ -78,7 +79,9 @@ export function createTools(operations) {
         model,
         focus: {
           type: "string",
-          description: "Optional focus text: the decision, risk area, or question Codex should challenge."
+          description:
+            "Optional focus: the decision, risk area, or question Codex should challenge, plus context it cannot " +
+            "see in the repository (requirements, expected load, constraints the design must keep)."
         },
         cwd
       },
@@ -90,9 +93,18 @@ export function createTools(operations) {
         "Read-only unless write:true. Write runs are gated by Harness approval (session policy), so they do not " +
         "start unless the user allows them; use write:true only when the user asked for edits. Foreground results include " +
         "the Codex thread id for follow-ups; use resume_last (without a task) to continue the previous Codex thread " +
-        "in this workspace, including from a new session. Prefer background:true for open-ended or long tasks.",
+        "in this workspace, including from a new session. Prefer background:true for open-ended or long tasks. " +
+        "Codex answers with a handoff report: Outcome (Status: done | partial | blocked), Details, Changes (edits made, " +
+        "or exact diffs on read-only runs), Verification, Risks and open questions, Next steps.",
       {
-        task: { type: "string", description: "What Codex should investigate, diagnose, or implement." },
+        task: {
+          type: "string",
+          description:
+            "The brief for Codex, which has not seen this conversation: the goal; context it cannot find quickly " +
+            "(relevant files, the exact error or failing output, what you already tried or ruled out); constraints; " +
+            "and what done looks like. The report format is added automatically; do not specify one. For " +
+            "resume_last, send only the new instruction."
+        },
         background,
         write: {
           type: "boolean",

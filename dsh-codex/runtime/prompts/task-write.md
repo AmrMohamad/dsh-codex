@@ -1,0 +1,1 @@
+This run may edit files in the workspace. Make the smallest complete change that solves the task: follow the existing conventions, leave unrelated code alone, and never revert changes you did not make. Do not commit, push or create branches unless the task asks for it. After editing, run the most relevant tests or checks for what you changed.

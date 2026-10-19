@@ -32,6 +32,8 @@ dsh-codex/
 │     ├─ codex-companion.mjs     CLI: review | adversarial-review | task | status | result | cancel | setup
 │     ├─ app-server-broker.mjs   one shared `codex app-server` per workspace
 │     └─ lib/*.mjs               JSON-RPC client, turn capture, git context, state, render
+├─ runtime/prompts/      what Codex receives: task envelope (task*.md), adversarial review
+├─ runtime/schemas/      adversarial review JSON output schema
 ├─ skills/*.md           embedded skills (frontmatter: name, description)
 └─ test/*.test.mjs       hermetic node:test suites (fakes.mjs = fake ctx/jobs/runner)
 ```
@@ -56,6 +58,14 @@ Call path: tool/command → `operations.js` → (`jobs.js` for runs | `runDirect
    context, waits and interrupts all have explicit limits. Keep new buffers bounded.
 7. **Report faithfully.** Errors keep the original Codex message first; hints are appended
    (`Hint: …`), never substituted. Never fabricate a Codex result.
+
+## Changing prompts and result formats
+
+Read `docs/PROMPTS.md` first. The task envelope, the adversarial prompt and schema, the
+renderers, and the DeepSeek-facing guidance (tool descriptions, `lib/prompt.js`, skills)
+form one contract: `test/prompts.test.mjs` keeps them in sync and
+`test/e2e-companion.test.mjs` checks what actually reaches Codex. Never ask Codex for
+upfront plans or progress updates (it stops early).
 
 ## Changing the vendored runtime (`dsh-codex/runtime/`)
 
@@ -88,5 +98,6 @@ cd dsh-codex && npm test      # hermetic: no Codex install, no network
 ## Where to read more
 
 - `docs/RESEARCH.md` — similar projects, their failure modes, and how this repo handles each.
+- `docs/PROMPTS.md` — every DeepSeek ↔ Codex message, the report contracts, and why.
 - `docs/REVIEW.md` — the hardening review history (P1/P2 findings and fixes).
 - `docs/codex-protocol.md`, `docs/dsh-host-api.md` — protocol and Host API contracts.

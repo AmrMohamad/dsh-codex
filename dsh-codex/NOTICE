@@ -30,4 +30,13 @@ Modifications for DeepSeek Harness (also Apache-2.0):
   - lib/render.mjs: failed native reviews show the Codex error message;
   - lib/broker-lifecycle.mjs: a broker that misses its readiness window is
     killed instead of abandoned (#801, #789);
+  - prompts/task.md, task-read-only.md, task-write.md (new) and lib/prompts.mjs:
+    delegated tasks are wrapped in a task envelope with access rules, working
+    rules and a handoff-report contract;
+  - prompts/adversarial-review.md, schemas/review-output.schema.json: severity
+    and confidence scales; failure_scenario, verification and residual_risks
+    fields; reasoning-first key order;
+  - lib/render.mjs: findings rendered with ids, confidence, scenario, fix and
+    verification; native-review priority legend; summaries skip headings;
+  - prompts/stop-review-gate.md removed (Claude-only, unused);
   - all DSH tool/command/prompt/skill integration in index.js and lib/.
