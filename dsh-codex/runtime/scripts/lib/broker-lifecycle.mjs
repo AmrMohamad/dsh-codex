@@ -6,6 +6,7 @@ import process from "node:process";
 import { spawn } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import { createBrokerEndpoint, parseBrokerEndpoint } from "./broker-endpoint.mjs";
+import { terminateProcessTree } from "./process.mjs";
 import { resolveStateDir } from "./state.mjs";
 
 export const PID_FILE_ENV = "CODEX_COMPANION_APP_SERVER_PID_FILE";
@@ -210,13 +211,18 @@ async function ensureBrokerSessionUnlocked(cwd, options = {}) {
 
   const ready = await waitForBrokerEndpoint(endpoint, options.timeoutMs ?? 2000);
   if (!ready) {
+    // Kill the broker we just spawned (its pid is fresh, so this cannot hit an
+    // unrelated process). Abandoning it left a detached broker, and later its
+    // `codex app-server`, alive until the idle reaper; several app-servers on
+    // one ~/.codex can burn the single-use refresh token
+    // (upstream openai/codex-plugin-cc#789, #801).
     teardownBrokerSession({
       endpoint,
       pidFile,
       logFile,
       sessionDir,
       pid: child.pid ?? null,
-      killProcess: options.killProcess ?? null
+      killProcess: options.killProcess ?? ((pid) => terminateProcessTree(pid))
     });
     return null;
   }

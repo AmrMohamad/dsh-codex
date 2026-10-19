@@ -158,7 +158,14 @@ function shorten(text, limit = 96) {
   if (normalized.length <= limit) {
     return normalized;
   }
-  return `${normalized.slice(0, limit - 3)}...`;
+  // Never cut a UTF-16 surrogate pair: the app-server drops a request carrying
+  // a lone surrogate without replying, so `thread/name/set` hung the task
+  // (upstream openai/codex-plugin-cc#793).
+  let end = limit - 3;
+  if (/[\uD800-\uDBFF]/.test(normalized[end - 1] ?? "")) {
+    end -= 1;
+  }
+  return `${normalized.slice(0, end)}...`;
 }
 
 function firstMeaningfulLine(text, fallback) {
@@ -369,7 +376,8 @@ async function executeReviewRun(request) {
       {
         status: result.status,
         stdout: result.reviewText,
-        stderr: result.stderr
+        stderr: result.stderr,
+        errorMessage: result.error?.message ?? null
       },
       { reviewLabel: reviewName, targetLabel: target.label, reasoningSummary: result.reasoningSummary }
     );
@@ -380,7 +388,10 @@ async function executeReviewRun(request) {
       turnId: result.turnId,
       payload,
       rendered,
-      summary: firstMeaningfulLine(result.reviewText, `${reviewName} completed.`),
+      summary: firstMeaningfulLine(
+        result.reviewText,
+        result.status === 0 ? `${reviewName} completed.` : result.error?.message ?? `${reviewName} failed.`
+      ),
       jobTitle: `Codex ${reviewName}`,
       jobClass: "review",
       targetLabel: target.label

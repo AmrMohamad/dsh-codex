@@ -299,7 +299,7 @@ export function renderNativeReviewResult(result, meta) {
   } else if (result.status === 0) {
     lines.push("Codex review completed without any stdout output.");
   } else {
-    lines.push("Codex review failed.");
+    lines.push(result.errorMessage ? `Codex review failed: ${result.errorMessage}` : "Codex review failed.");
   }
 
   if (stderr) {
