@@ -18,4 +18,16 @@ Modifications for DeepSeek Harness (also Apache-2.0):
   - broker idle reaping with active-turn protection, creation lock and atomic
     broker.json;
   - Claude session-transfer command and Claude-specific hooks removed;
+  - lib/args.mjs: inline `--key=value` keeps every `=` after the first
+    (openai/codex-plugin-cc#807);
+  - lib/git.mjs: review context keeps the leading `git status --short` column
+    (#813), reads non-ASCII paths via `-z` (#812), and caps the total size of
+    inlined untracked files;
+  - lib/codex.mjs, codex-companion.mjs: surrogate-safe `shorten` (#793); turn
+    capture no longer hangs when the start response has no turn id (#781); a
+    final `error` before an empty `turn/completed` is a failure and `turn.error`
+    is captured (openai/codex#47728); `willRetry` errors are progress only;
+  - lib/render.mjs: failed native reviews show the Codex error message;
+  - lib/broker-lifecycle.mjs: a broker that misses its readiness window is
+    killed instead of abandoned (#801, #789);
   - all DSH tool/command/prompt/skill integration in index.js and lib/.

@@ -215,3 +215,17 @@ stale snapshot plus three genuine issues; all fixed:
 - A cancelled turn is interrupted, not awaited: the companion/cancel path is bounded
   (5 s) and the durable record is marked cancelled; app-server may take a moment to
   unwind the aborted turn.
+
+## Round 4: upstream issue sweep (research-driven)
+
+The open issue trackers of similar bridges (openai/codex-plugin-cc above all, plus Codex
+app-server drivers and MCP-based bridges) were checked one by one against this code. Seven
+applied to the vendored runtime and were fixed with regression tests in
+`test/upstream-fixes.test.mjs` that fail on the old code: turn capture without a turn id
+(#781), surrogate-splitting thread names (#793), usage-limit `error` + `turn/completed`
+reported as success (openai/codex#47728), an abandoned broker after a missed readiness
+window (#801/#789), the `git status` column and quoted file names in review context
+(#813/#812), and inline `--key=value` truncation (#807). The plugin layer gained bounded
+failure detail for background jobs, ready-only setup caching, and `Hint:` lines for
+known failures. #786 was deliberately not applied (PID-reuse hazard in our cancel order).
+Full table with sources: [RESEARCH.md](RESEARCH.md).

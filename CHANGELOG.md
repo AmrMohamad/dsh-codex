@@ -1,5 +1,49 @@
 # Changelog
 
+## Unreleased
+
+Research-driven hardening: the upstream issue trackers of similar bridges were swept
+and every applicable failure mode was checked against this repo
+([docs/RESEARCH.md](docs/RESEARCH.md)).
+
+### Fixed (vendored runtime, each with a regression test)
+
+- Turn capture hung forever when the start response had no `turn.id` (upstream #781).
+- Task thread names could end in half an emoji; the app-server then never answered
+  `thread/name/set` and the task hung (#793).
+- A usage-limit `error` followed by an ordinary `turn/completed` was reported as a
+  successful run with no output (openai/codex#47728). It is now a failure with the
+  Codex error shown.
+- A broker that missed its 2 s readiness window was abandoned alive with its
+  `codex app-server`; repeated cold starts stacked them on one `~/.codex` (#801, #789).
+- Review context dropped the leading `git status` column (#813) and skipped
+  non-ASCII untracked files such as `café.js` (#812).
+- Untracked files were inlined into review prompts without a total cap; now 64 KiB.
+- Inline `--key=value` options were cut at the second `=` (#807).
+
+### Fixed (plugin layer)
+
+- Failed background jobs said only "exited with code 1": the job status now carries a
+  bounded stderr tail.
+- `codex_setup` cached "needs attention" reports, hiding a fresh `codex login` for 30 s.
+- Node resolution is cached even while Codex is missing, so the Host no longer re-runs
+  blocking probes on every call.
+
+### Added
+
+- `Hint:` lines for usage limits, expired/reused auth tokens and a missing CLI, so the
+  agent takes the next step instead of retrying (`lib/diagnose.js`).
+- `AGENTS.md` (module map, invariants, test rules) and `docs/RESEARCH.md`.
+
+### Changed
+
+- `index.js` and `lib/runtime.js` split into single-purpose modules (`tools`, `commands`,
+  `prompt`, `skills`, `resolve`, `process`, `argv`, `job-store`, `diagnose`, `text`);
+  duplicated flows in `operations.js` are now shared helpers. No tool, command or
+  config changes.
+- `/codex-status` usage now lists options before the job id (options after text are
+  literal).
+
 ## 0.1.0 — 2026-10-19
 
 Initial public release.
