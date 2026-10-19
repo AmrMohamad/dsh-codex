@@ -1,0 +1,29 @@
+# macOS
+.DS_Store
+
+# Node
+node_modules/
+npm-debug.log*
+
+# Plugin state / local runtime data
+.dsh/
+_scratch/
+*.log
+*.tmp
+*~
+
+# Upstream reference checkout used during development (vendored copies live in dsh-codex/runtime)
+codex-plugin-cc/
+
+# Generated app-server protocol dump (reproducible with probes/probe-appserver.mjs)
+probes/app-server-types/
+
+# Local editor/tool state
+.serena/
+.codex/
+.idea/
+.vscode/
+
+# Local publication instructions and promotional drafts
+/docs/GITHUB_UPLOAD_PROMPT.md
+/docs/LAUNCH_KIT.md

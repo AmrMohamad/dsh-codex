@@ -1,0 +1,81 @@
+{
+  "meta": {
+    "generatedAt": "2026-10-19T10:49:30.345Z",
+    "codexVersion": "codex-cli 0.163.0",
+    "codexHome": "/var/folders/4_/x815g8cs0c54kn1yqp1bvv1r0000gn/T/codex-probe-home"
+  },
+  "explicitSocket": {
+    "command": "codex app-server --listen unix:///var/folders/4_/x815g8cs0c54kn1yqp1bvv1r0000gn/T/codex-probe-sock-dFAwE4/app-server.sock",
+    "socketPath": "/var/folders/4_/x815g8cs0c54kn1yqp1bvv1r0000gn/T/codex-probe-sock-dFAwE4/app-server.sock",
+    "socketCreated": true,
+    "handshake": "HTTP/1.1 101 Switching Protocols",
+    "clients": {
+      "initializeA": {
+        "userAgent": "Claude Code/0.163.0 (Mac OS 27.0.1; arm64) dumb (Claude Code; 0.0.0-probe)",
+        "codexHome": "/private/var/folders/4_/x815g8cs0c54kn1yqp1bvv1r0000gn/T/codex-probe-home",
+        "platformFamily": "unix",
+        "platformOs": "macos"
+      },
+      "initializeB": {
+        "userAgent": "Claude Code/0.163.0 (Mac OS 27.0.1; arm64) dumb (second-client; 0.0.0-probe)",
+        "codexHome": "/private/var/folders/4_/x815g8cs0c54kn1yqp1bvv1r0000gn/T/codex-probe-home",
+        "platformFamily": "unix",
+        "platformOs": "macos"
+      },
+      "threadStartA": {
+        "id": "01a153c7-e02e-7f51-9a53-c2562b640181",
+        "source": "vscode",
+        "ephemeral": true
+      },
+      "threadStartB": {
+        "id": "01a153c7-e02e-7f51-9a53-c243512dfbf6",
+        "source": "vscode",
+        "ephemeral": true
+      },
+      "concurrentClientsOk": true
+    },
+    "exit": {
+      "code": 0,
+      "signal": null
+    },
+    "stderr": ""
+  },
+  "bareUnixListen": {
+    "command": "codex app-server --listen unix://",
+    "socketFilesCreated": [
+      "/var/folders/4_/x815g8cs0c54kn1yqp1bvv1r0000gn/T/codex-probe-home/app-server-control/app-server-control.sock"
+    ],
+    "serverStillRunning": true,
+    "stderr": "",
+    "handshake": "HTTP/1.1 101 Switching Protocols",
+    "initialize": {
+      "userAgent": "Claude Code/0.163.0 (Mac OS 27.0.1; arm64) dumb (Claude Code; 0.0.0-probe)",
+      "codexHome": "/private/var/folders/4_/x815g8cs0c54kn1yqp1bvv1r0000gn/T/codex-probe-home",
+      "platformFamily": "unix",
+      "platformOs": "macos"
+    },
+    "threadStart": {
+      "id": "01a153c7-f9dc-77c3-96d6-e2f9d06d635e",
+      "source": "vscode",
+      "ephemeral": true
+    },
+    "exit": {
+      "code": 0,
+      "signal": null
+    }
+  },
+  "proxyBridge": {
+    "command": "codex app-server proxy --sock /var/folders/4_/x815g8cs0c54kn1yqp1bvv1r0000gn/T/codex-probe-sock-dFAwE4/app-server.sock",
+    "exit": {
+      "timeout": true
+    },
+    "stdout": "",
+    "stderr": ""
+  },
+  "daemonVersionCommand": {
+    "command": "codex app-server daemon version",
+    "status": 1,
+    "stdout": "",
+    "stderr": "Error: failed to connect to /private/var/folders/4_/x815g8cs0c54kn1yqp1bvv1r0000gn/T/codex-probe-home/app-server-control/app-server-control.sock\n\nCaused by:\n    No such file or directory (os error 2)"
+  }
+}

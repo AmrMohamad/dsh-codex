@@ -1,0 +1,648 @@
+{
+  "meta": {
+    "generatedAt": "2026-10-19T10:46:10.015Z",
+    "codexVersion": "codex-cli 0.163.0",
+    "probeCwd": "/var/folders/4_/x815g8cs0c54kn1yqp1bvv1r0000gn/T/codex-probe-threadlist-qffNhO"
+  },
+  "initialize": {
+    "request": {
+      "clientInfo": {
+        "title": "Codex Plugin",
+        "name": "Claude Code",
+        "version": "0.0.0-probe"
+      },
+      "capabilities": {
+        "experimentalApi": false,
+        "requestAttestation": false,
+        "optOutNotificationMethods": [
+          "item/agentMessage/delta",
+          "item/reasoning/summaryTextDelta",
+          "item/reasoning/summaryPartAdded",
+          "item/reasoning/textDelta"
+        ]
+      }
+    },
+    "response": {
+      "userAgent": "Claude Code/0.163.0 (Mac OS 27.0.1; arm64) dumb (Claude Code; 0.0.0-probe)",
+      "codexHome": "/private/var/folders/4_/x815g8cs0c54kn1yqp1bvv1r0000gn/T/codex-probe-home",
+      "platformFamily": "unix",
+      "platformOs": "macos"
+    }
+  },
+  "threads": [
+    {
+      "label": "ephemeral-default",
+      "request": {
+        "cwd": "/var/folders/4_/x815g8cs0c54kn1yqp1bvv1r0000gn/T/codex-probe-threadlist-qffNhO",
+        "model": null,
+        "approvalPolicy": "never",
+        "sandbox": "read-only",
+        "serviceName": "claude_code_codex_plugin",
+        "ephemeral": true
+      },
+      "responseThread": {
+        "id": "01a153c4-d208-7142-8136-43b3609be266",
+        "name": null,
+        "ephemeral": true,
+        "source": "vscode",
+        "threadSource": null,
+        "originator": "Claude Code",
+        "cwd": "/var/folders/4_/x815g8cs0c54kn1yqp1bvv1r0000gn/T/codex-probe-threadlist-qffNhO",
+        "historyMode": "paginated",
+        "status": "idle"
+      },
+      "nameSet": {
+        "error": "ephemeral thread does not support metadata updates: 01a153c4-d208-7142-8136-43b3609be266",
+        "rpc": {
+          "code": -32600,
+          "message": "ephemeral thread does not support metadata updates: 01a153c4-d208-7142-8136-43b3609be266"
+        }
+      },
+      "threadId": "01a153c4-d208-7142-8136-43b3609be266"
+    },
+    {
+      "label": "persistent-default",
+      "request": {
+        "cwd": "/var/folders/4_/x815g8cs0c54kn1yqp1bvv1r0000gn/T/codex-probe-threadlist-qffNhO",
+        "model": null,
+        "approvalPolicy": "never",
+        "sandbox": "read-only",
+        "serviceName": "claude_code_codex_plugin",
+        "ephemeral": false
+      },
+      "responseThread": {
+        "id": "01a153c4-d2c4-7841-93ed-568c03e8080b",
+        "name": null,
+        "ephemeral": false,
+        "source": "vscode",
+        "threadSource": null,
+        "originator": "Claude Code",
+        "cwd": "/var/folders/4_/x815g8cs0c54kn1yqp1bvv1r0000gn/T/codex-probe-threadlist-qffNhO",
+        "historyMode": "paginated",
+        "status": "idle"
+      },
+      "nameSet": {},
+      "threadId": "01a153c4-d2c4-7841-93ed-568c03e8080b"
+    },
+    {
+      "label": "persistent-threadSource-appServer",
+      "request": {
+        "cwd": "/var/folders/4_/x815g8cs0c54kn1yqp1bvv1r0000gn/T/codex-probe-threadlist-qffNhO",
+        "model": null,
+        "approvalPolicy": "never",
+        "sandbox": "read-only",
+        "serviceName": "claude_code_codex_plugin",
+        "ephemeral": false,
+        "threadSource": "appServer"
+      },
+      "responseThread": {
+        "id": "01a153c4-d4b3-7e01-ba9b-d666484273a9",
+        "name": null,
+        "ephemeral": false,
+        "source": "vscode",
+        "threadSource": "appServer",
+        "originator": "Claude Code",
+        "cwd": "/var/folders/4_/x815g8cs0c54kn1yqp1bvv1r0000gn/T/codex-probe-threadlist-qffNhO",
+        "historyMode": "paginated",
+        "status": "idle"
+      },
+      "nameSet": {},
+      "threadId": "01a153c4-d4b3-7e01-ba9b-d666484273a9"
+    }
+  ],
+  "lists": {
+    "plugin findLatestTaskThread params": {
+      "params": {
+        "cwd": "/var/folders/4_/x815g8cs0c54kn1yqp1bvv1r0000gn/T/codex-probe-threadlist-qffNhO",
+        "limit": 20,
+        "sortKey": "updated_at",
+        "sourceKinds": [
+          "appServer"
+        ],
+        "searchTerm": "Codex Companion Task"
+      },
+      "dataLength": 0,
+      "responseKeys": [
+        "data",
+        "readStates",
+        "nextCursor",
+        "backwardsCursor"
+      ],
+      "threads": []
+    },
+    "same but no sourceKinds": {
+      "params": {
+        "cwd": "/var/folders/4_/x815g8cs0c54kn1yqp1bvv1r0000gn/T/codex-probe-threadlist-qffNhO",
+        "limit": 20,
+        "sortKey": "updated_at",
+        "searchTerm": "Codex Companion Task"
+      },
+      "dataLength": 0,
+      "responseKeys": [
+        "data",
+        "readStates",
+        "nextCursor",
+        "backwardsCursor"
+      ],
+      "threads": []
+    },
+    "sourceKinds appServer only": {
+      "params": {
+        "cwd": "/var/folders/4_/x815g8cs0c54kn1yqp1bvv1r0000gn/T/codex-probe-threadlist-qffNhO",
+        "limit": 20,
+        "sourceKinds": [
+          "appServer"
+        ]
+      },
+      "dataLength": 0,
+      "responseKeys": [
+        "data",
+        "readStates",
+        "nextCursor",
+        "backwardsCursor"
+      ],
+      "threads": []
+    },
+    "sourceKinds vscode only": {
+      "params": {
+        "cwd": "/var/folders/4_/x815g8cs0c54kn1yqp1bvv1r0000gn/T/codex-probe-threadlist-qffNhO",
+        "limit": 20,
+        "sourceKinds": [
+          "vscode"
+        ]
+      },
+      "dataLength": 0,
+      "responseKeys": [
+        "data",
+        "readStates",
+        "nextCursor",
+        "backwardsCursor"
+      ],
+      "threads": []
+    },
+    "cwd only": {
+      "params": {
+        "cwd": "/var/folders/4_/x815g8cs0c54kn1yqp1bvv1r0000gn/T/codex-probe-threadlist-qffNhO",
+        "limit": 20
+      },
+      "dataLength": 0,
+      "responseKeys": [
+        "data",
+        "readStates",
+        "nextCursor",
+        "backwardsCursor"
+      ],
+      "threads": []
+    },
+    "plugin params with realpath cwd": {
+      "params": {
+        "cwd": "/private/var/folders/4_/x815g8cs0c54kn1yqp1bvv1r0000gn/T/codex-probe-threadlist-qffNhO",
+        "limit": 20,
+        "sortKey": "updated_at",
+        "sourceKinds": [
+          "appServer"
+        ],
+        "searchTerm": "Codex Companion Task"
+      },
+      "dataLength": 0,
+      "responseKeys": [
+        "data",
+        "readStates",
+        "nextCursor",
+        "backwardsCursor"
+      ],
+      "threads": []
+    },
+    "realpath cwd, no sourceKinds": {
+      "params": {
+        "cwd": "/private/var/folders/4_/x815g8cs0c54kn1yqp1bvv1r0000gn/T/codex-probe-threadlist-qffNhO",
+        "limit": 20,
+        "sortKey": "updated_at",
+        "searchTerm": "Codex Companion Task"
+      },
+      "dataLength": 0,
+      "responseKeys": [
+        "data",
+        "readStates",
+        "nextCursor",
+        "backwardsCursor"
+      ],
+      "threads": []
+    },
+    "realpath cwd, vscode sourceKinds": {
+      "params": {
+        "cwd": "/private/var/folders/4_/x815g8cs0c54kn1yqp1bvv1r0000gn/T/codex-probe-threadlist-qffNhO",
+        "limit": 20,
+        "sourceKinds": [
+          "vscode"
+        ]
+      },
+      "dataLength": 0,
+      "responseKeys": [
+        "data",
+        "readStates",
+        "nextCursor",
+        "backwardsCursor"
+      ],
+      "threads": []
+    },
+    "realpath cwd, useStateDbOnly": {
+      "params": {
+        "cwd": "/private/var/folders/4_/x815g8cs0c54kn1yqp1bvv1r0000gn/T/codex-probe-threadlist-qffNhO",
+        "limit": 20,
+        "useStateDbOnly": true
+      },
+      "dataLength": 0,
+      "responseKeys": [
+        "data",
+        "readStates",
+        "nextCursor",
+        "backwardsCursor"
+      ],
+      "threads": []
+    },
+    "no cwd filter": {
+      "params": {
+        "limit": 20
+      },
+      "dataLength": 0,
+      "responseKeys": [
+        "data",
+        "readStates",
+        "nextCursor",
+        "backwardsCursor"
+      ],
+      "threads": []
+    }
+  },
+  "resumePersistent": {
+    "request": {
+      "threadId": "01a153c4-d2c4-7841-93ed-568c03e8080b",
+      "cwd": "/var/folders/4_/x815g8cs0c54kn1yqp1bvv1r0000gn/T/codex-probe-threadlist-qffNhO"
+    },
+    "responseKeys": [
+      "thread",
+      "model",
+      "modelProvider",
+      "serviceTier",
+      "disabledPluginIds",
+      "cwd",
+      "runtimeWorkspaceRoots",
+      "instructionSources",
+      "approvalPolicy",
+      "approvalsReviewer",
+      "sandbox",
+      "activePermissionProfile",
+      "reasoningEffort",
+      "collaborationMode",
+      "multiAgentMode",
+      "initialTurnsPage",
+      "turnsBackwardsCursor",
+      "itemsBackwardsCursor"
+    ],
+    "thread": {
+      "id": "01a153c4-d2c4-7841-93ed-568c03e8080b",
+      "name": "Codex Companion Task: persistent-default",
+      "ephemeral": false,
+      "source": "vscode",
+      "threadSource": null,
+      "originator": "Claude Code",
+      "cwd": "/private/var/folders/4_/x815g8cs0c54kn1yqp1bvv1r0000gn/T/codex-probe-threadlist-qffNhO",
+      "historyMode": "paginated",
+      "status": "idle"
+    },
+    "response": {
+      "thread": {
+        "id": "01a153c4-d2c4-7841-93ed-568c03e8080b",
+        "environments": [
+          {
+            "environmentId": "local",
+            "cwd": "/var/folders/4_/x815g8cs0c54kn1yqp1bvv1r0000gn/T/codex-probe-threadlist-qffNhO",
+            "runtimeWorkspaceRoots": [
+              "/var/folders/4_/x815g8cs0c54kn1yqp1bvv1r0000gn/T/codex-probe-threadlist-qffNhO"
+            ]
+          }
+        ],
+        "extra": null,
+        "sessionId": "01a153c4-d2c4-7841-93ed-568c03e8080b",
+        "forkedFromId": null,
+        "parentThreadId": null,
+        "preview": "Reply with exactly: OK",
+        "ephemeral": false,
+        "section": null,
+        "sectionEnteredAt": null,
+        "projectId": null,
+        "historyMode": "paginated",
+        "modelProvider": "openai",
+        "model": "gpt-6.1-sol",
+        "reasoningEffort": null,
+        "createdAt": 1792406770,
+        "updatedAt": 1792406774,
+        "recencyAt": 1792406771,
+        "status": {
+          "type": "idle"
+        },
+        "path": "/private/var/folders/4_/x815g8cs0c54kn1yqp1bvv1r0000gn/T/codex-probe-home/sessions/2026/10/19/rollout-2026-10-19T13-46-10-01a153c4-d2c4-7841-93ed-568c03e8080b.jsonl",
+        "cwd": "/private/var/folders/4_/x815g8cs0c54kn1yqp1bvv1r0000gn/T/codex-probe-threadlist-qffNhO",
+        "cliVersion": "0.163.0",
+        "originator": "Claude Code",
+        "source": "vscode",
+        "canAcceptDirectInput": true,
+        "threadSource": null,
+        "agentNickname": null,
+        "agentRole": null,
+        "gitInfo": null,
+        "name": "Codex Companion Task: persistent-default",
+        "daybreakEnabled": null,
+        "turns": [
+          {
+            "id": "01a153c4-d909-7191-92c7-7afc8dccd189",
+            "rootTurnId": "01a153c4-d909-7191-92c7-7afc8dccd189",
+            "items": [
+              {
+                "type": "userMessage",
+                "id": "01a153c4-db88-7521-a27e-3b00bb6d9849",
+                "clientId": null,
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "Reply with exactly: OK",
+                    "text_elements": []
+                  }
+                ]
+              },
+              {
+                "type": "agentMessage",
+                "id": "msg_0495572a2e4c3692016ad5f4f6074c81918eb801479765d690",
+                "text": "OK",
+                "phase": "final_answer",
+                "memoryCitation": null,
+                "delivery": null,
+                "questions": null
+              }
+            ],
+            "itemsView": "full",
+            "status": "completed",
+            "error": null,
+            "startedAt": 1792406771,
+            "completedAt": 1792406774,
+            "durationMs": 2423
+          }
+        ]
+      },
+      "model": "gpt-6.1-sol",
+      "modelProvider": "openai",
+      "serviceTier": null,
+      "disabledPluginIds": [],
+      "cwd": "/var/folders/4_/x815g8cs0c54kn1yqp1bvv1r0000gn/T/codex-probe-threadlist-qffNhO",
+      "runtimeWorkspaceRoots": [
+        "/var/folders/4_/x815g8cs0c54kn1yqp1bvv1r0000gn/T/codex-probe-threadlist-qffNhO"
+      ],
+      "instructionSources": [],
+      "approvalPolicy": "never",
+      "approvalsReviewer": "user",
+      "sandbox": {
+        "type": "readOnly",
+        "networkAccess": false
+      },
+      "activePermissionProfile": null,
+      "reasoningEffort": null,
+      "collaborationMode": {
+        "mode": "default",
+        "settings": {
+          "model": "gpt-6.1-sol",
+          "reasoning_effort": null,
+          "developer_instructions": null
+        }
+      },
+      "multiAgentMode": "explicitRequestOnly",
+      "initialTurnsPage": null,
+      "turnsBackwardsCursor": "{\"requestedThreadId\":\"01a153c4-d2c4-7841-93ed-568c03e8080b\",\"rolloutOrdinal\":1,\"includeAnchor\":true,\"scope\":{\"kind\":\"turns\"}}",
+      "itemsBackwardsCursor": "{\"requestedThreadId\":\"01a153c4-d2c4-7841-93ed-568c03e8080b\",\"rolloutOrdinal\":11,\"includeAnchor\":true,\"scope\":{\"kind\":\"itemsByCreatedAtOrdinal\"}}"
+    }
+  },
+  "reviewDeprecation": [
+    {
+      "delivery": "inline",
+      "error": "thread not found: 00000000-0000-4000-8000-000000000000",
+      "newNotifications": [
+        {
+          "method": "thread/tokenUsage/updated",
+          "params": {
+            "threadId": "01a153c4-d2c4-7841-93ed-568c03e8080b",
+            "turnId": "01a153c4-d909-7191-92c7-7afc8dccd189",
+            "tokenUsage": {
+              "total": {
+                "totalTokens": 18158,
+                "inputTokens": 18153,
+                "cachedInputTokens": 12288,
+                "cacheWriteInputTokens": 0,
+                "outputTokens": 5,
+                "reasoningOutputTokens": 0
+              },
+              "last": {
+                "totalTokens": 18158,
+                "inputTokens": 18153,
+                "cachedInputTokens": 12288,
+                "cacheWriteInputTokens": 0,
+                "outputTokens": 5,
+                "reasoningOutputTokens": 0
+              },
+              "modelContextWindow": 475000
+            }
+          }
+        },
+        {
+          "method": "thread/goal/cleared",
+          "params": {
+            "threadId": "01a153c4-d2c4-7841-93ed-568c03e8080b"
+          }
+        }
+      ]
+    },
+    {
+      "delivery": "detached",
+      "error": "thread not found: 00000000-0000-4000-8000-000000000000",
+      "newNotifications": [
+        {
+          "method": "deprecationNotice",
+          "params": {
+            "summary": "review/start with delivery \"detached\" is deprecated and will be removed in a future release.",
+            "details": "Use thread/start followed by review/start with delivery \"inline\" for a separate review thread, or thread/fork followed by turn/start with your own review instructions."
+          }
+        }
+      ]
+    }
+  ],
+  "stderr": "",
+  "exit": {
+    "code": 0,
+    "signal": null
+  },
+  "persistTurn": {
+    "request": {
+      "threadId": "01a153c4-d2c4-7841-93ed-568c03e8080b",
+      "input": [
+        {
+          "type": "text",
+          "text": "Reply with exactly: OK",
+          "text_elements": []
+        }
+      ],
+      "model": null,
+      "effort": null,
+      "outputSchema": null
+    },
+    "response": {
+      "turn": {
+        "id": "01a153c4-d909-7191-92c7-7afc8dccd189",
+        "rootTurnId": "01a153c4-d909-7191-92c7-7afc8dccd189",
+        "items": [],
+        "itemsView": "notLoaded",
+        "status": "inProgress",
+        "error": null,
+        "startedAt": null,
+        "completedAt": null,
+        "durationMs": null
+      }
+    },
+    "completed": {
+      "threadId": "01a153c4-d2c4-7841-93ed-568c03e8080b",
+      "turn": {
+        "id": "01a153c4-d909-7191-92c7-7afc8dccd189",
+        "rootTurnId": "01a153c4-d909-7191-92c7-7afc8dccd189",
+        "items": [
+          {
+            "type": "agentMessage",
+            "id": "msg_0495572a2e4c3692016ad5f4f6074c81918eb801479765d690",
+            "text": "OK",
+            "phase": "final_answer",
+            "memoryCitation": null,
+            "delivery": null,
+            "questions": null
+          }
+        ],
+        "itemsView": "summary",
+        "status": "completed",
+        "error": null,
+        "startedAt": 1792406771,
+        "completedAt": 1792406774,
+        "durationMs": 2423
+      }
+    },
+    "error": null
+  },
+  "listsAfterTurn": {
+    "plugin params with realpath cwd after turn": {
+      "params": {
+        "cwd": "/private/var/folders/4_/x815g8cs0c54kn1yqp1bvv1r0000gn/T/codex-probe-threadlist-qffNhO",
+        "limit": 20,
+        "sortKey": "updated_at",
+        "sourceKinds": [
+          "appServer"
+        ],
+        "searchTerm": "Codex Companion Task"
+      },
+      "dataLength": 0,
+      "threads": []
+    },
+    "realpath cwd, searchTerm only after turn": {
+      "params": {
+        "cwd": "/private/var/folders/4_/x815g8cs0c54kn1yqp1bvv1r0000gn/T/codex-probe-threadlist-qffNhO",
+        "limit": 20,
+        "sortKey": "updated_at",
+        "searchTerm": "Codex Companion Task"
+      },
+      "dataLength": 1,
+      "threads": [
+        {
+          "id": "01a153c4-d2c4-7841-93ed-568c03e8080b",
+          "name": "Codex Companion Task: persistent-default",
+          "ephemeral": false,
+          "source": "vscode",
+          "threadSource": null,
+          "originator": "Claude Code",
+          "cwd": "/private/var/folders/4_/x815g8cs0c54kn1yqp1bvv1r0000gn/T/codex-probe-threadlist-qffNhO",
+          "historyMode": "paginated",
+          "status": "idle"
+        }
+      ]
+    },
+    "realpath cwd, vscode sourceKinds after turn": {
+      "params": {
+        "cwd": "/private/var/folders/4_/x815g8cs0c54kn1yqp1bvv1r0000gn/T/codex-probe-threadlist-qffNhO",
+        "limit": 20,
+        "sourceKinds": [
+          "vscode"
+        ]
+      },
+      "dataLength": 1,
+      "threads": [
+        {
+          "id": "01a153c4-d2c4-7841-93ed-568c03e8080b",
+          "name": "Codex Companion Task: persistent-default",
+          "ephemeral": false,
+          "source": "vscode",
+          "threadSource": null,
+          "originator": "Claude Code",
+          "cwd": "/var/folders/4_/x815g8cs0c54kn1yqp1bvv1r0000gn/T/codex-probe-threadlist-qffNhO",
+          "historyMode": "paginated",
+          "status": "idle"
+        }
+      ]
+    },
+    "realpath cwd only after turn": {
+      "params": {
+        "cwd": "/private/var/folders/4_/x815g8cs0c54kn1yqp1bvv1r0000gn/T/codex-probe-threadlist-qffNhO",
+        "limit": 20
+      },
+      "dataLength": 1,
+      "threads": [
+        {
+          "id": "01a153c4-d2c4-7841-93ed-568c03e8080b",
+          "name": "Codex Companion Task: persistent-default",
+          "ephemeral": false,
+          "source": "vscode",
+          "threadSource": null,
+          "originator": "Claude Code",
+          "cwd": "/var/folders/4_/x815g8cs0c54kn1yqp1bvv1r0000gn/T/codex-probe-threadlist-qffNhO",
+          "historyMode": "paginated",
+          "status": "idle"
+        }
+      ]
+    },
+    "no cwd filter after turn": {
+      "params": {
+        "limit": 20
+      },
+      "dataLength": 1,
+      "threads": [
+        {
+          "id": "01a153c4-d2c4-7841-93ed-568c03e8080b",
+          "name": "Codex Companion Task: persistent-default",
+          "ephemeral": false,
+          "source": "vscode",
+          "threadSource": null,
+          "originator": "Claude Code",
+          "cwd": "/var/folders/4_/x815g8cs0c54kn1yqp1bvv1r0000gn/T/codex-probe-threadlist-qffNhO",
+          "historyMode": "paginated",
+          "status": "idle"
+        }
+      ]
+    }
+  },
+  "threadDelete": [
+    {
+      "threadId": "01a153c4-d208-7142-8136-43b3609be266",
+      "error": "thread is not persisted and cannot be deleted: 01a153c4-d208-7142-8136-43b3609be266"
+    },
+    {
+      "threadId": "01a153c4-d2c4-7841-93ed-568c03e8080b",
+      "response": {}
+    },
+    {
+      "threadId": "01a153c4-d4b3-7e01-ba9b-d666484273a9",
+      "response": {}
+    }
+  ]
+}

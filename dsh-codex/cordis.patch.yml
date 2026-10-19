@@ -1,0 +1,16 @@
+# Codex plugin for DeepSeek Harness.
+#
+# The row has no Config schema (the bundle is zero-import and zero-peer), so the
+# optional settings below are read defensively by index.js. Uncomment any of them
+# in your profile patch to override automatic detection:
+#
+#   codexPath: absolute path to the `codex` executable
+#   nodePath:  absolute path to a Node.js >= 18.18 executable used for the companion runtime
+#   dataDir:   directory for durable Codex job/broker state (default: $DSH_HOME/codex-plugin-data)
+#
+# All three can also be supplied through CODEX_PLUGIN_NODE / CODEX_PLUGIN_CODEX_PATH /
+# CODEX_PLUGIN_DATA_DIR environment variables.
+- insert:
+    - id: codex
+      name: '@local/dsh-codex'
+      config: {}

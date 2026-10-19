@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "Codex",
+    "description": "在 DeepSeek Harness 中使用 OpenAI Codex CLI：原生代码审查、对抗式审查、委派任务与后台 Codex 作业。"
+  }
+}

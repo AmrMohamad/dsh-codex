@@ -1,0 +1,163 @@
+{
+  "meta": {
+    "generatedAt": "2026-10-19T10:51:13.361Z",
+    "cwd": "/var/folders/4_/x815g8cs0c54kn1yqp1bvv1r0000gn/T/codex-probe-schema-OcZwjj"
+  },
+  "turn": {
+    "request": {
+      "threadId": "01a153c9-7289-79f0-89fc-b3d400cab558",
+      "input": [
+        {
+          "type": "text",
+          "text": "Respond only with the requested JSON object. summary must be the word ok and verdict must be pass.",
+          "text_elements": []
+        }
+      ],
+      "model": null,
+      "effort": "low",
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "summary": {
+            "type": "string"
+          },
+          "verdict": {
+            "type": "string",
+            "enum": [
+              "pass",
+              "fail"
+            ]
+          }
+        },
+        "required": [
+          "summary",
+          "verdict"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "response": {
+      "turn": {
+        "id": "01a153c9-72b1-7be1-a080-0f1064c0c34c",
+        "rootTurnId": "01a153c9-72b1-7be1-a080-0f1064c0c34c",
+        "items": [],
+        "itemsView": "notLoaded",
+        "status": "inProgress",
+        "error": null,
+        "startedAt": null,
+        "completedAt": null,
+        "durationMs": null
+      }
+    },
+    "completed": {
+      "threadId": "01a153c9-7289-79f0-89fc-b3d400cab558",
+      "turn": {
+        "id": "01a153c9-72b1-7be1-a080-0f1064c0c34c",
+        "rootTurnId": "01a153c9-72b1-7be1-a080-0f1064c0c34c",
+        "items": [
+          {
+            "type": "agentMessage",
+            "id": "msg_06e385efe0ea0dfe016ad5f626f1288191b127f8199f33fcb5",
+            "text": "{\"summary\":\"ok\",\"verdict\":\"pass\"}",
+            "phase": "final_answer",
+            "memoryCitation": null,
+            "delivery": null,
+            "questions": null
+          }
+        ],
+        "itemsView": "summary",
+        "status": "completed",
+        "error": null,
+        "startedAt": 1792407073,
+        "completedAt": 1792407079,
+        "durationMs": 5824
+      }
+    },
+    "agentMessages": [
+      {
+        "phase": "final_answer",
+        "text": "{\"summary\":\"ok\",\"verdict\":\"pass\"}"
+      }
+    ],
+    "finalMessage": "{\"summary\":\"ok\",\"verdict\":\"pass\"}",
+    "parsed": {
+      "summary": "ok",
+      "verdict": "pass"
+    },
+    "parseError": null
+  },
+  "initialize": {
+    "userAgent": "Claude Code/0.163.0 (Mac OS 27.0.1; arm64) dumb (Claude Code; 0.0.0-probe)",
+    "codexHome": "/private/var/folders/4_/x815g8cs0c54kn1yqp1bvv1r0000gn/T/codex-probe-home",
+    "platformFamily": "unix",
+    "platformOs": "macos"
+  },
+  "threadStart": {
+    "thread": {
+      "id": "01a153c9-7289-79f0-89fc-b3d400cab558",
+      "environments": [
+        {
+          "environmentId": "local",
+          "cwd": "/var/folders/4_/x815g8cs0c54kn1yqp1bvv1r0000gn/T/codex-probe-schema-OcZwjj",
+          "runtimeWorkspaceRoots": [
+            "/var/folders/4_/x815g8cs0c54kn1yqp1bvv1r0000gn/T/codex-probe-schema-OcZwjj"
+          ]
+        }
+      ],
+      "extra": null,
+      "sessionId": "01a153c9-7289-79f0-89fc-b3d400cab558",
+      "forkedFromId": null,
+      "parentThreadId": null,
+      "preview": "",
+      "ephemeral": true,
+      "section": null,
+      "sectionEnteredAt": null,
+      "projectId": null,
+      "historyMode": "paginated",
+      "modelProvider": "openai",
+      "model": "gpt-6.1-sol",
+      "reasoningEffort": null,
+      "createdAt": 1792407073,
+      "updatedAt": 1792407073,
+      "recencyAt": 1792407073,
+      "status": {
+        "type": "idle"
+      },
+      "path": null,
+      "cwd": "/var/folders/4_/x815g8cs0c54kn1yqp1bvv1r0000gn/T/codex-probe-schema-OcZwjj",
+      "cliVersion": "0.163.0",
+      "originator": "Claude Code",
+      "source": "vscode",
+      "canAcceptDirectInput": true,
+      "threadSource": null,
+      "agentNickname": null,
+      "agentRole": null,
+      "gitInfo": null,
+      "name": null,
+      "daybreakEnabled": null,
+      "turns": []
+    },
+    "model": "gpt-6.1-sol",
+    "modelProvider": "openai",
+    "serviceTier": null,
+    "disabledPluginIds": [],
+    "cwd": "/var/folders/4_/x815g8cs0c54kn1yqp1bvv1r0000gn/T/codex-probe-schema-OcZwjj",
+    "runtimeWorkspaceRoots": [
+      "/var/folders/4_/x815g8cs0c54kn1yqp1bvv1r0000gn/T/codex-probe-schema-OcZwjj"
+    ],
+    "instructionSources": [],
+    "approvalPolicy": "never",
+    "approvalsReviewer": "user",
+    "sandbox": {
+      "type": "readOnly",
+      "networkAccess": false
+    },
+    "activePermissionProfile": null,
+    "reasoningEffort": null,
+    "multiAgentMode": "explicitRequestOnly"
+  },
+  "stderr": "",
+  "exit": {
+    "code": 0
+  }
+}

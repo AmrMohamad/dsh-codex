@@ -1,0 +1,5 @@
+{
+  "name": "codex-dsh",
+  "version": "0.1.0",
+  "description": "Codex companion runtime for the DeepSeek Harness Codex plugin."
+}

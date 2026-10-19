@@ -1,0 +1,21 @@
+Codex plugin for DeepSeek Harness
+Copyright 2026
+
+This product includes software developed by OpenAI as part of the Codex plugin
+for Claude Code (https://github.com/openai/codex-plugin-cc), licensed under the
+Apache License, Version 2.0. The vendored runtime lives in ./runtime/ and retains
+that project's LICENSE and NOTICE files.
+
+Modifications for DeepSeek Harness (also Apache-2.0):
+  - state root environment variable CODEX_COMPANION_DATA_DIR (CLAUDE_PLUGIN_DATA
+    kept as a fallback) and cross-process state locking with atomic writes;
+  - plugin manifest path moved to runtime/plugin.json and clientInfo renamed;
+  - optional --job-id override so Harness job ids and companion job records share
+    one identity; jobId added to foreground JSON payloads;
+  - --focus-file support for adversarial-review focus text;
+  - typed refusals for app-server server-to-client requests (approvals,
+    elicitation, user input, dynamic tools) instead of method-not-found;
+  - broker idle reaping with active-turn protection, creation lock and atomic
+    broker.json;
+  - Claude session-transfer command and Claude-specific hooks removed;
+  - all DSH tool/command/prompt/skill integration in index.js and lib/.

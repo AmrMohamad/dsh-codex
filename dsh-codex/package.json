@@ -1,0 +1,34 @@
+{
+  "name": "@local/dsh-codex",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Use the OpenAI Codex CLI from DeepSeek Harness: native code reviews, adversarial reviews, delegated tasks, and background Codex jobs.",
+  "license": "Apache-2.0",
+  "exports": {
+    ".": "./index.js",
+    "./locale/en.json": "./locale/en.json",
+    "./locale/zh.json": "./locale/zh.json",
+    "./icon": "./icon.svg"
+  },
+  "files": [
+    "index.js",
+    "lib/",
+    "runtime/",
+    "skills/",
+    "locale/",
+    "icon.svg",
+    "cordis.patch.yml",
+    "README.md",
+    "NOTICE",
+    "LICENSE"
+  ],
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    }
+  },
+  "scripts": {
+    "test": "node --test test/*.test.mjs"
+  }
+}

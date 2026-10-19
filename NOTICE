@@ -1,0 +1,25 @@
+dsh-codex — Codex for DeepSeek Harness
+Copyright 2026 Amr Mohamed
+
+This product includes software developed by OpenAI as part of the Codex plugin
+for Claude Code (https://github.com/openai/codex-plugin-cc), licensed under the
+Apache License, Version 2.0. The vendored runtime lives in dsh-codex/runtime/ and
+retains that project's LICENSE and NOTICE files (Copyright 2026 OpenAI).
+
+Modifications for DeepSeek Harness (Apache-2.0):
+  - native DSH tools, slash commands, prompt section and embedded skills;
+  - one Codex run per native DSH background job, streaming and cancellation;
+  - Harness-approval gating for write-capable runs (writeApproval config);
+  - typed refusals for app-server server-to-client requests;
+  - session/data-dir plumbing, cross-process state locking, atomic writes;
+  - shared broker creation lock, idle reaping, active-turn protection and
+    turn/interrupt timeouts;
+  - cancellation race fixes and recovery of orphaned turns;
+  - untracked-symlink redaction in review context;
+  - profile-independent state, `~` expansion, pinned resolved Codex executable;
+  - Claude session-transfer command and Claude-specific hooks removed.
+  See dsh-codex/NOTICE for the bundle-level list.
+
+This is an independent community project. It is not associated with, endorsed by,
+or maintained by OpenAI or DeepSeek. "OpenAI", "Codex", and "DeepSeek Harness"
+are used only to describe compatibility. All trademarks belong to their owners.

@@ -1,0 +1,194 @@
+{
+  "meta": {
+    "generatedAt": "2026-10-19T10:49:54.194Z",
+    "sessionPath": "/var/folders/4_/x815g8cs0c54kn1yqp1bvv1r0000gn/T/codex-probe-import-DJspFf/fake-claude-session.jsonl",
+    "repo": "/var/folders/4_/x815g8cs0c54kn1yqp1bvv1r0000gn/T/codex-probe-import-DJspFf/repo"
+  },
+  "initialize": {
+    "userAgent": "Claude Code/0.163.0 (Mac OS 27.0.1; arm64) dumb (Claude Code; 0.0.0-probe)",
+    "codexHome": "/private/var/folders/4_/x815g8cs0c54kn1yqp1bvv1r0000gn/T/codex-probe-home",
+    "platformFamily": "unix",
+    "platformOs": "macos"
+  },
+  "cases": {
+    "plugin payload (details without skills)": {
+      "request": {
+        "migrationItems": [
+          {
+            "itemType": "SESSIONS",
+            "description": "Transfer Claude session fake-claude-session.jsonl",
+            "cwd": null,
+            "details": {
+              "plugins": [],
+              "sessions": [
+                {
+                  "path": "/var/folders/4_/x815g8cs0c54kn1yqp1bvv1r0000gn/T/codex-probe-import-DJspFf/fake-claude-session.jsonl",
+                  "cwd": "/var/folders/4_/x815g8cs0c54kn1yqp1bvv1r0000gn/T/codex-probe-import-DJspFf/repo",
+                  "title": null
+                }
+              ],
+              "mcpServers": [],
+              "hooks": [],
+              "subagents": [],
+              "commands": []
+            }
+          }
+        ]
+      },
+      "response": {
+        "importId": "85a2320e-4da2-442e-b6d5-26f64d684f27"
+      },
+      "notifications": [
+        {
+          "method": "remoteControl/status/changed",
+          "params": {
+            "status": "disabled",
+            "serverName": "Amrs-Mac-mini.local",
+            "installationId": "6da20d31-d851-4fc3-b15a-505bbe2d5696",
+            "environmentId": null
+          }
+        },
+        {
+          "method": "externalAgentConfig/import/progress",
+          "params": {
+            "importId": "85a2320e-4da2-442e-b6d5-26f64d684f27",
+            "itemTypeResults": [
+              {
+                "itemType": "SESSIONS",
+                "successes": [],
+                "failures": [
+                  {
+                    "itemType": "SESSIONS",
+                    "errorType": null,
+                    "subErrorType": "session_not_detected",
+                    "failureStage": "session_missing",
+                    "message": "external agent session was not detected for import: /var/folders/4_/x815g8cs0c54kn1yqp1bvv1r0000gn/T/codex-probe-import-DJspFf/fake-claude-session.jsonl",
+                    "cwd": null,
+                    "source": "/var/folders/4_/x815g8cs0c54kn1yqp1bvv1r0000gn/T/codex-probe-import-DJspFf/fake-claude-session.jsonl"
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "method": "externalAgentConfig/import/completed",
+          "params": {
+            "importId": "85a2320e-4da2-442e-b6d5-26f64d684f27",
+            "itemTypeResults": [
+              {
+                "itemType": "SESSIONS",
+                "successes": [],
+                "failures": [
+                  {
+                    "itemType": "SESSIONS",
+                    "errorType": null,
+                    "subErrorType": "session_not_detected",
+                    "failureStage": "session_missing",
+                    "message": "external agent session was not detected for import: /var/folders/4_/x815g8cs0c54kn1yqp1bvv1r0000gn/T/codex-probe-import-DJspFf/fake-claude-session.jsonl",
+                    "cwd": null,
+                    "source": "/var/folders/4_/x815g8cs0c54kn1yqp1bvv1r0000gn/T/codex-probe-import-DJspFf/fake-claude-session.jsonl"
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "method": "account/updated",
+          "params": {
+            "authMode": "chatgpt",
+            "planType": "plus"
+          }
+        }
+      ]
+    },
+    "payload with skills: [] added": {
+      "request": {
+        "migrationItems": [
+          {
+            "itemType": "SESSIONS",
+            "description": "Transfer Claude session fake-claude-session.jsonl",
+            "cwd": null,
+            "details": {
+              "plugins": [],
+              "sessions": [
+                {
+                  "path": "/var/folders/4_/x815g8cs0c54kn1yqp1bvv1r0000gn/T/codex-probe-import-DJspFf/fake-claude-session.jsonl",
+                  "cwd": "/var/folders/4_/x815g8cs0c54kn1yqp1bvv1r0000gn/T/codex-probe-import-DJspFf/repo",
+                  "title": null
+                }
+              ],
+              "mcpServers": [],
+              "hooks": [],
+              "subagents": [],
+              "commands": [],
+              "skills": []
+            }
+          }
+        ]
+      },
+      "response": {
+        "importId": "b08dd008-8cfa-42c7-91ba-943ecc2d063d"
+      },
+      "notifications": [
+        {
+          "method": "externalAgentConfig/import/progress",
+          "params": {
+            "importId": "b08dd008-8cfa-42c7-91ba-943ecc2d063d",
+            "itemTypeResults": [
+              {
+                "itemType": "SESSIONS",
+                "successes": [],
+                "failures": [
+                  {
+                    "itemType": "SESSIONS",
+                    "errorType": null,
+                    "subErrorType": "session_not_detected",
+                    "failureStage": "session_missing",
+                    "message": "external agent session was not detected for import: /var/folders/4_/x815g8cs0c54kn1yqp1bvv1r0000gn/T/codex-probe-import-DJspFf/fake-claude-session.jsonl",
+                    "cwd": null,
+                    "source": "/var/folders/4_/x815g8cs0c54kn1yqp1bvv1r0000gn/T/codex-probe-import-DJspFf/fake-claude-session.jsonl"
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "method": "externalAgentConfig/import/completed",
+          "params": {
+            "importId": "b08dd008-8cfa-42c7-91ba-943ecc2d063d",
+            "itemTypeResults": [
+              {
+                "itemType": "SESSIONS",
+                "successes": [],
+                "failures": [
+                  {
+                    "itemType": "SESSIONS",
+                    "errorType": null,
+                    "subErrorType": "session_not_detected",
+                    "failureStage": "session_missing",
+                    "message": "external agent session was not detected for import: /var/folders/4_/x815g8cs0c54kn1yqp1bvv1r0000gn/T/codex-probe-import-DJspFf/fake-claude-session.jsonl",
+                    "cwd": null,
+                    "source": "/var/folders/4_/x815g8cs0c54kn1yqp1bvv1r0000gn/T/codex-probe-import-DJspFf/fake-claude-session.jsonl"
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "empty migrationItems": {
+      "request": {
+        "migrationItems": []
+      },
+      "response": {
+        "importId": "edeb2187-a831-4a3c-818b-4e0a51c461ce"
+      },
+      "notifications": []
+    }
+  },
+  "stderr": ""
+}

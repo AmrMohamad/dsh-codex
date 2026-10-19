@@ -1,0 +1,69 @@
+{
+  "meta": {
+    "generatedAt": "2026-10-19T10:53:02.483Z",
+    "cwd": "/var/folders/4_/x815g8cs0c54kn1yqp1bvv1r0000gn/T/codex-probe-plugin-client-KKp0by",
+    "codexHome": "/var/folders/4_/x815g8cs0c54kn1yqp1bvv1r0000gn/T/codex-probe-home",
+    "pluginDir": "codex-plugin-cc/plugins/codex",
+    "codexVersion": "see getCodexAvailability"
+  },
+  "availability": {
+    "available": true,
+    "detail": "codex-cli 0.163.0; advanced runtime available"
+  },
+  "authStatus": {
+    "available": true,
+    "loggedIn": true,
+    "detail": "ChatGPT login active for a***@gmail.com",
+    "source": "app-server",
+    "authMethod": "chatgpt",
+    "verified": true,
+    "requiresOpenaiAuth": true,
+    "provider": null
+  },
+  "turn": {
+    "status": 0,
+    "threadId": "01a153cb-208b-7560-9caf-1e785d33c08e",
+    "turnId": "01a153cb-21ff-7972-85f0-e7bbe36ebad9",
+    "finalMessage": "OK",
+    "turnStatus": "completed",
+    "stderr": "",
+    "touchedFiles": [],
+    "commandExecutions": 0,
+    "reasoningSummaryLength": 0,
+    "progressEvents": [
+      {
+        "message": "Starting Codex task thread.",
+        "phase": "starting"
+      },
+      {
+        "message": "Thread ready (01a153cb-208b-7560-9caf-1e785d33c08e).",
+        "phase": "starting",
+        "threadId": "01a153cb-208b-7560-9caf-1e785d33c08e"
+      },
+      {
+        "message": "Turn started (01a153cb-21ff-7972-85f0-e7bbe36ebad9).",
+        "phase": "starting",
+        "threadId": "01a153cb-208b-7560-9caf-1e785d33c08e",
+        "turnId": "01a153cb-21ff-7972-85f0-e7bbe36ebad9"
+      },
+      {
+        "message": "Assistant message captured: OK",
+        "phase": "finalizing",
+        "stderrMessage": null,
+        "logTitle": "Assistant message",
+        "logBody": "OK"
+      },
+      {
+        "message": "Turn completed.",
+        "phase": "finalizing"
+      }
+    ]
+  },
+  "findLatestTaskThread": null,
+  "brokerSession": null,
+  "errors": [],
+  "brokerShutdown": {
+    "endpoint": "unix:/var/folders/4_/x815g8cs0c54kn1yqp1bvv1r0000gn/T/cxc-lkKN2w/broker.sock",
+    "sent": true
+  }
+}
