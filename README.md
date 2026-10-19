@@ -52,7 +52,7 @@ tool registry, background-job model, approval service, prompt assembly, and skil
   [The whole bloodbath is public.](docs/REVIEW.md)
 
 <p align="center">
-  <img src="docs/assets/demo.png" alt="A real dsh-codex session: a background Codex review finding a P1, a refused write run, and the durable job record" width="820" />
+  <img src="docs/assets/demo.png" alt="Illustrated dsh-codex workflow: start a background review, read a P1 finding, and see a write request refused when approval is not granted" width="820" />
 </p>
 
 ## 60-second tour
