@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 0.1.1 — 2026-10-20
 
 Research-driven hardening: the upstream issue trackers of similar bridges were swept
 and every applicable failure mode was checked against this repo

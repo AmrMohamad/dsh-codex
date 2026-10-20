@@ -1,6 +1,6 @@
 {
   "name": "@local/dsh-codex",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "private": true,
   "type": "module",
   "description": "Use the OpenAI Codex CLI from DeepSeek Harness: native code reviews, adversarial reviews, delegated tasks, and background Codex jobs.",

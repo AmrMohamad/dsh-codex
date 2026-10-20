@@ -162,7 +162,7 @@ test("chunksToText prefers stdout and falls back to stderr", () => {
   assert.equal(chunksToText([]), "");
 });
 
-test("createRunner resolves lazily and caches the runtime", () => {
+test("createRunner resolves lazily and caches executable resolutions", () => {
   const runner = createRunner({});
   let first;
   try {
@@ -177,7 +177,9 @@ test("createRunner resolves lazily and caches the runtime", () => {
     throw error;
   }
   const second = runner.ready();
-  assert.equal(first, second);
+  assert.equal(first.node, second.node);
+  assert.equal(first.codex, second.codex);
+  assert.equal(first.dataDir, second.dataDir);
   assert.ok(first.node.command);
   assert.ok(first.codex.command);
   assert.ok(first.dataDir);
