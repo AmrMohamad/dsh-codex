@@ -17,8 +17,19 @@ Modifications for DeepSeek Harness (Apache-2.0):
   - cancellation race fixes and recovery of orphaned turns;
   - untracked-symlink redaction in review context;
   - profile-independent state, `~` expansion, pinned resolved Codex executable;
-  - Claude session-transfer command and Claude-specific hooks removed.
-  See dsh-codex/NOTICE for the bundle-level list.
+  - Claude session-transfer command and Claude-specific hooks removed;
+  - fixes for upstream issues in the vendored runtime: inline `--key=value`
+    parsing (#807), git status column and quoted file names in review context
+    (#813, #812), surrogate-safe thread names (#793), turn capture without a
+    start-response turn id (#781), killing a broker that misses its readiness
+    window (#801/#789), fatal `error` + `turn/completed` reported as failure
+    (openai/codex#47728), and a total budget for inlined untracked files;
+  - prompt contracts for DeepSeek Harness: a task envelope with a handoff-report
+    contract (prompts/task*.md), a stricter adversarial-review prompt and schema
+    (severity and confidence scales, failure scenario, verification, residual
+    risks), actionable result rendering, and removal of the unused Claude
+    stop-gate prompt (see docs/PROMPTS.md).
+  See dsh-codex/NOTICE for the bundle-level list and docs/RESEARCH.md for details.
 
 This is an independent community project. It is not associated with, endorsed by,
 or maintained by OpenAI or DeepSeek. "OpenAI", "Codex", and "DeepSeek Harness"

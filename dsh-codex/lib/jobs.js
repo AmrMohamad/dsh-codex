@@ -13,10 +13,16 @@
  * share one identity. That keeps `codex_status` / `codex_result` meaningful for
  * both foreground (removed after collection) and background runs.
  */
-import { cancelArgv, cleanOutput } from "./runtime.js";
+import { cancelArgv } from "./argv.js";
+import { withFailureHint } from "./diagnose.js";
+import { cleanOutput, tail } from "./text.js";
 
 export const CODEX_JOB_KIND = "codex";
 export const CODEX_JOB_OUTPUT_LIMIT = 256 * 1024;
+/** Output kept in memory per job to explain a failure (the job ring holds the rest). */
+const FAILURE_EVIDENCE_CHARS = 4000;
+/** stderr tail shown in a failed job's status line. */
+const FAILURE_DETAIL_CHARS = 1200;
 
 export function getJobs(ctx) {
   try {
@@ -28,11 +34,6 @@ export function getJobs(ctx) {
 
 function isTerminal(view) {
   return view.status !== "running" && view.status !== "stopping";
-}
-
-function tail(text, limit = 4000) {
-  const value = String(text ?? "");
-  return value.length <= limit ? value : `…${value.slice(value.length - limit)}`;
 }
 
 /**
@@ -60,11 +61,14 @@ export function chunksToText(chunks) {
 
 function failureDetail(view, stderr) {
   const detail = view.detail ? String(view.detail) : "";
-  const cleaned = cleanOutput(stderr);
-  if (cleaned && !detail.includes(cleaned)) {
-    return cleaned ? `${detail || "Codex run failed."}\n${tail(cleaned)}` : tail(cleaned);
+  // A failed producer already put the stderr tail and any hint in `detail`.
+  if (view.status === "failed" && detail) {
+    return detail;
   }
-  return detail || `Codex job ${view.id} ${view.status}.`;
+  const cleaned = cleanOutput(stderr);
+  const base = detail || `Codex job ${view.id} ${view.status}.`;
+  const text = cleaned && !detail.includes(cleaned) ? `${base}\n${tail(cleaned)}` : base;
+  return withFailureHint(text, `${detail}\n${stderr}`);
 }
 
 /**
@@ -95,6 +99,9 @@ export function startCodexJob(options) {
       const controller = new AbortController();
       let cancelReason = null;
       let progressBuffer = "";
+      // Bounded tails used only to explain a failure in the job status line.
+      let stdoutTail = "";
+      let stderrTail = "";
 
       const running = runner.run(options.buildArgv(job.id), {
         cwd,
@@ -105,9 +112,11 @@ export function startCodexJob(options) {
         capture: false,
         onStdout(chunk) {
           job.append(chunk, { channel: "stdout" });
+          stdoutTail = tail(stdoutTail + chunk, FAILURE_EVIDENCE_CHARS);
         },
         onStderr(chunk) {
           job.append(chunk, { channel: "stderr" });
+          stderrTail = tail(stderrTail + chunk, FAILURE_EVIDENCE_CHARS);
           progressBuffer += chunk;
           const lines = progressBuffer.split(/\r?\n/);
           progressBuffer = lines.pop() ?? "";
@@ -148,15 +157,18 @@ export function startCodexJob(options) {
               return { status: "killed" };
             }
             if (result.error) {
-              return { status: "failed", detail: result.error.message };
+              return { status: "failed", detail: withFailureHint(result.error.message) };
             }
             if (result.code === 0) {
               return { status: "completed" };
             }
-            return {
-              status: "failed",
-              detail: `Codex companion exited with code ${result.code ?? "unknown"}.\n${tail(cleanOutput(result.stderr))}`
-            };
+            // Capture is off for job runs (the job ring has the full output),
+            // so explain the failure from the bounded tails kept above.
+            const detail = `Codex companion exited with code ${result.code ?? "unknown"}.\n${tail(
+              cleanOutput(stderrTail),
+              FAILURE_DETAIL_CHARS
+            )}`;
+            return { status: "failed", detail: withFailureHint(detail.trim(), `${stderrTail}\n${stdoutTail}`) };
           },
           (error) => {
             try {
@@ -316,8 +328,7 @@ async function runCodexDirect(options) {
   const text = cleanOutput(result.stdout) || cleanOutput(result.stderr);
   if (result.code !== 0 || result.error) {
     throw new Error(
-      result.error?.message ??
-        `Codex companion exited with code ${result.code ?? "unknown"}.\n${tail(text)}`
+      withFailureHint(result.error?.message ?? `Codex companion exited with code ${result.code ?? "unknown"}.\n${tail(text)}`)
     );
   }
   return { text: text || "(Codex finished with no output.)", jobId };

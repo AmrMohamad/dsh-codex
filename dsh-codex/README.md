@@ -101,10 +101,14 @@ them per run (`model`, `effort`). `spark` is mapped to `gpt-5.3-codex-spark`.
 
 ```
 DSH Host plugin (index.js, zero imports)
-├─ tools/commands/prompt/skills  ── native DSH registration
-├─ lib/runtime.js               ── node/codex resolution, child env, argv, process lifecycle
-├─ lib/jobs.js                  ── ctx.jobs integration: stream, cancel, collect
+├─ lib/tools.js, commands.js     ── model tools and /codex-* commands (same operations)
+├─ lib/prompt.js, skills.js      ── system-prompt section and embedded skills
 ├─ lib/operations.js            ── review / adversarial-review / rescue / status / result / cancel / setup
+├─ lib/jobs.js                  ── ctx.jobs integration: stream, cancel, collect, failure detail
+├─ lib/runtime.js               ── runner: cached node/codex resolution → run()
+├─ lib/resolve.js, process.js   ── executable discovery; spawn, child env, process-tree kill
+├─ lib/argv.js, job-store.js    ── companion argv; durable job records (read/render)
+├─ lib/diagnose.js, text.js     ── actionable failure hints; text helpers
 └─ runtime/                     ── vendored codex-companion (Apache-2.0, patched)
    ├─ scripts/codex-companion.mjs
    ├─ scripts/app-server-broker.mjs   ── one shared `codex app-server` per workspace (unix socket)
@@ -171,8 +175,10 @@ Full details: [`docs/REVIEW.md`](../docs/REVIEW.md).
 
 ## Verification
 
-- `npm test` — 67 hermetic tests (fake Harness context, jobs registry and runner; no
-  real Codex calls), including 37 regression tests from the review rounds.
+- `npm test` — 96 hermetic tests (fake Harness context, jobs registry and runner; no
+  real Codex calls; end-to-end runs use `test/fixtures/fake-codex.mjs`), including
+  prompt/report contract tests, regression tests from the review rounds, and tests for every
+  applicable upstream issue (`test/upstream-fixes.test.mjs`, see `docs/RESEARCH.md`).
 - Live on this machine: `codex_setup`, a background `codex_review` that found a seeded
   P1, cross-workspace `codex_result`, a foreground `codex_rescue`, an adversarial
   review with a parsed verdict, background start + `job_kill` (turn interrupted,
@@ -224,12 +230,13 @@ Full details: [`docs/REVIEW.md`](../docs/REVIEW.md).
 
 ```bash
 cd dsh-codex
-npm test          # 67 hermetic unit tests, no Codex calls
+npm test          # hermetic unit tests, no Codex calls
 ```
 
 Layout: `index.js` (registration), `lib/` (adapter), `runtime/` (vendored
 companion), `test/` (fake-ctx and fake-runner tests), `docs/` at the workspace
-root contains the source-analysis, DSH-API and Codex-protocol recon.
+root contains the source-analysis, DSH-API and Codex-protocol recon. The module map
+and invariants are in `AGENTS.md` at the repository root.
 
 ## Attribution
 

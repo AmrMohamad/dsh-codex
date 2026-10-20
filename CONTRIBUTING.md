@@ -7,7 +7,7 @@ Thanks for wanting to make Codex inside DeepSeek Harness better.
 ```bash
 git clone https://github.com/AmrMohamad/dsh-codex.git
 cd dsh-codex/dsh-codex
-npm test          # 67 hermetic tests, no Codex calls
+npm test          # hermetic tests, no Codex calls
 ```
 
 Install the bundle locally for live testing:
@@ -21,11 +21,14 @@ The bundle is linked, so edits to `index.js` and `lib/` take effect after a prof
 recomposition (toggle the bundle in the Plugin Manager). Vendored `runtime/` scripts are
 spawned per run, so they pick up edits immediately.
 
+Start with [AGENTS.md](AGENTS.md): it maps every module and lists the invariants a change
+must keep.
+
 ## What a good PR looks like
 
 - One focused change with a short “why” in the description.
-- A regression test for every behavioral fix (`test/regressions.test.mjs` is the home for
-  review findings).
+- A regression test for every behavioral fix (`test/regressions.test.mjs` for review
+  findings, `test/upstream-fixes.test.mjs` for upstream issues). It must fail without the fix.
 - No new peer dependencies: the bundle is deliberately zero-import.
 - Docs updated: tool/command descriptions, prompt section, skills, README, and
   `docs/REVIEW.md` when the change closes a known finding.

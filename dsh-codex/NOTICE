@@ -18,4 +18,25 @@ Modifications for DeepSeek Harness (also Apache-2.0):
   - broker idle reaping with active-turn protection, creation lock and atomic
     broker.json;
   - Claude session-transfer command and Claude-specific hooks removed;
+  - lib/args.mjs: inline `--key=value` keeps every `=` after the first
+    (openai/codex-plugin-cc#807);
+  - lib/git.mjs: review context keeps the leading `git status --short` column
+    (#813), reads non-ASCII paths via `-z` (#812), and caps the total size of
+    inlined untracked files;
+  - lib/codex.mjs, codex-companion.mjs: surrogate-safe `shorten` (#793); turn
+    capture no longer hangs when the start response has no turn id (#781); a
+    final `error` before an empty `turn/completed` is a failure and `turn.error`
+    is captured (openai/codex#47728); `willRetry` errors are progress only;
+  - lib/render.mjs: failed native reviews show the Codex error message;
+  - lib/broker-lifecycle.mjs: a broker that misses its readiness window is
+    killed instead of abandoned (#801, #789);
+  - prompts/task.md, task-read-only.md, task-write.md (new) and lib/prompts.mjs:
+    delegated tasks are wrapped in a task envelope with access rules, working
+    rules and a handoff-report contract;
+  - prompts/adversarial-review.md, schemas/review-output.schema.json: severity
+    and confidence scales; failure_scenario, verification and residual_risks
+    fields; reasoning-first key order;
+  - lib/render.mjs: findings rendered with ids, confidence, scenario, fix and
+    verification; native-review priority legend; summaries skip headings;
+  - prompts/stop-review-gate.md removed (Claude-only, unused);
   - all DSH tool/command/prompt/skill integration in index.js and lib/.

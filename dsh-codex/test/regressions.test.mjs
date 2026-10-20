@@ -7,18 +7,15 @@ import { test } from "node:test";
 
 import { parseCommandInput } from "../index.js";
 import { createOperations } from "../lib/operations.js";
+import { taskArgv } from "../lib/argv.js";
 import {
-  createRunner,
-  expandHome,
   findStoredCodexJob,
   isTerminalStoredJob,
   listStoredCodexJobs,
-  renderStoredCodexJob,
-  resolveCodex,
-  resolveDataDir,
-  resolveWorkspaceRootCached,
-  taskArgv
-} from "../lib/runtime.js";
+  renderStoredCodexJob
+} from "../lib/job-store.js";
+import { expandHome, resolveCodex, resolveDataDir } from "../lib/resolve.js";
+import { createRunner } from "../lib/runtime.js";
 import { createFakeJobs, createFakeRunner } from "./fakes.mjs";
 
 function tmpDir(prefix) {
@@ -145,13 +142,10 @@ test("CODEX_PLUGIN_CODEX_PATH is honored as a documented override", () => {
   }
 });
 
-test("expandHome and workspace-root cache behave", () => {
+test("expandHome expands only a leading ~", () => {
   assert.equal(expandHome("~"), os.homedir());
   assert.equal(expandHome("~/x"), path.join(os.homedir(), "x"));
   assert.equal(expandHome("/abs/~x"), "/abs/~x");
-  const cwd = tmpDir("dsh-codex-cache-");
-  assert.equal(resolveWorkspaceRootCached(cwd), cwd);
-  assert.equal(resolveWorkspaceRootCached(cwd), cwd);
 });
 
 /* ------------------------- stored record rendering ------------------------- */
@@ -275,7 +269,7 @@ test("setup readiness is cached and force bypasses the cache", async () => {
   const env = opEnv({
     runner: createFakeRunner(() => {
       calls += 1;
-      return { stdout: `setup report ${calls}\n` };
+      return { stdout: `# Codex Setup\n\nStatus: ready\n\nsetup report ${calls}\n` };
     })
   });
   const first = await env.operations.setup(env.exec, {});
@@ -286,6 +280,20 @@ test("setup readiness is cached and force bypasses the cache", async () => {
   const forced = await env.operations.setup(env.exec, { force: true });
   assert.match(forced.text, /setup report 2/);
   assert.equal(calls, 2);
+});
+
+test("setup never caches a report that needs attention", async () => {
+  let calls = 0;
+  const env = opEnv({
+    runner: createFakeRunner(() => {
+      calls += 1;
+      return { stdout: `# Codex Setup\n\nStatus: needs attention\n\n- auth: not authenticated (${calls})\n` };
+    })
+  });
+  await env.operations.setup(env.exec, {});
+  const second = await env.operations.setup(env.exec, {});
+  assert.equal(calls, 2, "a failed readiness check is re-run, not served from cache");
+  assert.doesNotMatch(second.text, /cached/);
 });
 
 test("resume_last without a task runs without a prompt file", async () => {
@@ -615,7 +623,7 @@ test("broker reaping ignores active turns and recent activity", async () => {
 });
 
 test("process-tree termination uses taskkill on Windows and process groups on POSIX", async () => {
-  const { terminateTreeImpl } = await import("../lib/runtime.js");
+  const { terminateTreeImpl } = await import("../lib/process.js");
   const child = { exitCode: null, pid: 4242, kill() {} };
   const winCalls = [];
   terminateTreeImpl({

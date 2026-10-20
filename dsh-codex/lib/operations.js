@@ -13,32 +13,26 @@ import process from "node:process";
 import {
   adversarialReviewArgv,
   cancelArgv,
-  cleanOutput,
-  expandHome,
-  findStoredCodexJob,
-  isTerminalStoredJob,
-  listStoredCodexJobs,
-  removePromptFile,
-  renderStoredCodexJob,
-  renderStoredCodexJobList,
   resultArgv,
   reviewArgv,
   setupArgv,
   statusArgv,
-  taskArgv,
-  writePromptFile
-} from "./runtime.js";
+  taskArgv
+} from "./argv.js";
+import {
+  findStoredCodexJob,
+  isTerminalStoredJob,
+  listStoredCodexJobs,
+  renderStoredCodexJob,
+  renderStoredCodexJobList
+} from "./job-store.js";
 import { getJobs, runCodexForeground, startCodexJob } from "./jobs.js";
+import { removePromptFile, writePromptFile } from "./process.js";
+import { expandHome } from "./resolve.js";
+import { cleanOutput, shorten } from "./text.js";
 
-const MAX_TASK_SUMMARY = 72;
 const SETUP_CACHE_TTL_MS = 30_000;
-
-function shorten(text, limit = MAX_TASK_SUMMARY) {
-  const value = String(text ?? "")
-    .trim()
-    .replace(/\s+/g, " ");
-  return value.length <= limit ? value : `${value.slice(0, limit - 1)}…`;
-}
+const STATUS_LIST_LIMIT = 8;
 
 function assertOk(operation, result) {
   if (result.error) {
@@ -234,24 +228,17 @@ export function createOperations({ ctx, runner, config = {} }) {
           "(@deepseek-ai/dsh-jobs-local + @deepseek-ai/dsh-tool-jobs). Call again with background: false."
       );
     }
-    let id;
-    try {
-      id = startCodexJob({
-        jobs,
-        runner,
-        label: spec.label,
-        cwd: spec.cwd,
-        sessionId: sessionIdOf(exec),
-        owner: exec?.agent?.id,
-        toolCall: toolCallOf(exec),
-        buildArgv: spec.buildArgv,
-        onSettled: spec.onSettled
-      });
-    } catch (error) {
-      // The caller owns prompt-file cleanup when we throw before registration.
-      spec.onStartFailed?.();
-      throw error;
-    }
+    const id = startCodexJob({
+      jobs,
+      runner,
+      label: spec.label,
+      cwd: spec.cwd,
+      sessionId: sessionIdOf(exec),
+      owner: exec?.agent?.id,
+      toolCall: toolCallOf(exec),
+      buildArgv: spec.buildArgv,
+      onSettled: spec.onSettled
+    });
     backgroundJobs.set(id, { cwd: spec.cwd, sessionId: sessionIdOf(exec), label: spec.label });
     return {
       text:
@@ -262,12 +249,68 @@ export function createOperations({ ctx, runner, config = {} }) {
     };
   }
 
+  /**
+   * Run one Codex operation whose text (task prompt or review focus) travels
+   * in a temp file. The file must outlive the run: foreground removes it here,
+   * a background job removes it when it settles, and a failed start removes it
+   * before rethrowing.
+   *
+   * @param {any} exec
+   * @param {{ label: string; cwd: string; background?: boolean; text?: string;
+   *   buildArgv: (jobId: string, file: string | null) => string[] }} spec
+   */
+  async function runWithTextFile(exec, spec) {
+    const file = spec.text ? writePromptFile(spec.text) : null;
+    const cleanup = () => removePromptFile(file);
+    const run = { label: spec.label, cwd: spec.cwd, buildArgv: (jobId) => spec.buildArgv(jobId, file) };
+    if (!spec.background) {
+      try {
+        return await foreground(exec, run);
+      } finally {
+        cleanup();
+      }
+    }
+    try {
+      return background(exec, { ...run, onSettled: cleanup });
+    } catch (error) {
+      cleanup();
+      throw error;
+    }
+  }
+
+  /**
+   * Run a read-only companion query. When the CLI cannot run or fails, answer
+   * from durable records instead: a broken Codex install must not hide them.
+   *
+   * @returns {Promise<{ stored: { text: string } } | { result: any }>}
+   */
+  async function queryWithStoredFallback(exec, operation, argv, cwd, fallback) {
+    let result;
+    try {
+      result = await runDirect(exec, argv, cwd);
+    } catch (error) {
+      const stored = fallback();
+      if (stored) {
+        return { stored };
+      }
+      throw error;
+    }
+    if (result.code !== 0) {
+      const stored = fallback();
+      if (stored) {
+        return { stored };
+      }
+      assertOk(operation, result);
+    }
+    return { result };
+  }
+
   function storedStatusFallback(dir, jobId, sessionId) {
     if (jobId) {
       const stored = findStoredCodexJob(dir, jobId);
       return stored ? { text: renderStoredCodexJob(stored) } : null;
     }
-    const jobs = listStoredCodexJobs(dir, { sessionId, limit: 8 });
+    const jobs = listStoredCodexJobs(dir, { sessionId, limit: STATUS_LIST_LIMIT });
     if (jobs.length > 0) {
       return {
         text: renderStoredCodexJobList(jobs, { title: "Codex jobs for this session:" })
@@ -297,7 +340,8 @@ export function createOperations({ ctx, runner, config = {} }) {
     return latest ? { text: renderStoredCodexJob(latest) } : null;
   }
 
-  async function fast(exec, argv, cwd) {
+  /** Run a short companion command directly (no Harness job): status, result, setup, cancel. */
+  async function runDirect(exec, argv, cwd) {
     return runner.run(argv, {
       cwd,
       sessionId: sessionIdOf(exec),
@@ -305,23 +349,25 @@ export function createOperations({ ctx, runner, config = {} }) {
     });
   }
 
-  function setup(exec, args = {}) {
-    return (async () => {
-      const cwd = resolveCwd(exec, args.cwd);
-      const cached = setupCache.get(cwd);
-      const now = Date.now();
-      if (!args.force && cached && now - cached.at < SETUP_CACHE_TTL_MS) {
-        const age = Math.max(1, Math.round((now - cached.at) / 1000));
-        return {
-          text: `${cached.text}\n\n(readiness cached ${age}s ago; pass force:true to re-check now)`
-        };
-      }
-      const result = await fast(exec, setupArgv({ cwd }), cwd);
-      assertOk("setup", result);
-      const text = cleanOutput(result.stdout);
+  async function setup(exec, args = {}) {
+    const cwd = resolveCwd(exec, args.cwd);
+    const cached = setupCache.get(cwd);
+    const now = Date.now();
+    if (!args.force && cached && now - cached.at < SETUP_CACHE_TTL_MS) {
+      const age = Math.max(1, Math.round((now - cached.at) / 1000));
+      return { text: `${cached.text}\n\n(readiness cached ${age}s ago; pass force:true to re-check now)` };
+    }
+    const result = await runDirect(exec, setupArgv({ cwd }), cwd);
+    assertOk("setup", result);
+    const text = cleanOutput(result.stdout);
+    // Cache only a ready report: right after `codex login`, a cached
+    // "needs attention" would contradict reality.
+    if (/^Status: ready$/m.test(text)) {
       setupCache.set(cwd, { at: now, text });
-      return { text };
-    })();
+    } else {
+      setupCache.delete(cwd);
+    }
+    return { text };
   }
 
   return {
@@ -342,39 +388,16 @@ export function createOperations({ ctx, runner, config = {} }) {
 
     async adversarialReview(exec, args = {}) {
       const cwd = resolveCwd(exec, args.cwd);
-      const focusFile = args.focus ? writePromptFile(args.focus) : null;
-      const cleanup = () => removePromptFile(focusFile);
-      const label = args.base
-        ? `Codex adversarial review (base ${args.base})`
-        : "Codex adversarial review (working tree)";
-      const buildArgv = (jobId) =>
-        adversarialReviewArgv({
-          cwd,
-          base: args.base,
-          scope: args.scope,
-          model: args.model,
-          jobId,
-          focusFile
-        });
-      let cleanupOwned = false;
-      try {
-        if (args.background) {
-          const result = background(exec, {
-            label,
-            cwd,
-            buildArgv,
-            onSettled: cleanup,
-            onStartFailed: cleanup
-          });
-          cleanupOwned = true;
-          return result;
-        }
-        return await foreground(exec, { label, cwd, buildArgv });
-      } finally {
-        if (!cleanupOwned) {
-          cleanup();
-        }
-      }
+      return runWithTextFile(exec, {
+        label: args.base
+          ? `Codex adversarial review (base ${args.base})`
+          : "Codex adversarial review (working tree)",
+        cwd,
+        background: args.background,
+        text: args.focus,
+        buildArgv: (jobId, focusFile) =>
+          adversarialReviewArgv({ cwd, base: args.base, scope: args.scope, model: args.model, jobId, focusFile })
+      });
     },
 
     async rescue(exec, args = {}) {
@@ -396,38 +419,14 @@ export function createOperations({ ctx, runner, config = {} }) {
           return { text: permission.text };
         }
       }
-      const promptFile = task ? writePromptFile(task) : null;
-      const cleanup = () => removePromptFile(promptFile);
-      const label = resumeLast ? "Codex resume" : `Codex task: ${shorten(task)}`;
-      const buildArgv = (jobId) =>
-        taskArgv({
-          cwd,
-          promptFile,
-          model: args.model,
-          effort: args.effort,
-          write,
-          resumeLast,
-          jobId
-        });
-      let cleanupOwned = false;
-      try {
-        if (args.background) {
-          const result = background(exec, {
-            label,
-            cwd,
-            buildArgv,
-            onSettled: cleanup,
-            onStartFailed: cleanup
-          });
-          cleanupOwned = true;
-          return result;
-        }
-        return await foreground(exec, { label, cwd, buildArgv });
-      } finally {
-        if (!cleanupOwned) {
-          cleanup();
-        }
-      }
+      return runWithTextFile(exec, {
+        label: resumeLast ? "Codex resume" : `Codex task: ${shorten(task)}`,
+        cwd,
+        background: args.background,
+        text: task,
+        buildArgv: (jobId, promptFile) =>
+          taskArgv({ cwd, promptFile, model: args.model, effort: args.effort, write, resumeLast, jobId })
+      });
     },
 
     async status(exec, args = {}) {
@@ -448,37 +447,22 @@ export function createOperations({ ctx, runner, config = {} }) {
           return { text: renderStoredCodexJob(stored) };
         }
       }
-      let result;
-      try {
-        result = await fast(
-          exec,
-          statusArgv({
-            cwd,
-            jobId: args.job_id,
-            all: Boolean(args.all),
-            wait: Boolean(args.wait),
-            timeoutMs: args.timeout_ms
-          }),
-          cwd
-        );
-      } catch (error) {
-        // A missing/broken Codex install must not hide durable job records.
-        const fallback = storedStatusFallback(dir, args.job_id, sessionIdOf(exec));
-        if (fallback) {
-          return fallback;
-        }
-        throw error;
-      }
-      if (result.code !== 0) {
-        const fallback = storedStatusFallback(dir, args.job_id, sessionIdOf(exec));
-        if (fallback) {
-          return fallback;
-        }
-        assertOk("status", result);
+      const argv = statusArgv({
+        cwd,
+        jobId: args.job_id,
+        all: Boolean(args.all),
+        wait: Boolean(args.wait),
+        timeoutMs: args.timeout_ms
+      });
+      const { stored: fallback, result } = await queryWithStoredFallback(exec, "status", argv, cwd, () =>
+        storedStatusFallback(dir, args.job_id, sessionIdOf(exec))
+      );
+      if (fallback) {
+        return fallback;
       }
       const text = cleanOutput(result.stdout);
       if (!args.job_id && /no jobs recorded yet/i.test(text)) {
-        const stored = listStoredCodexJobs(dir, { sessionId: sessionIdOf(exec), limit: 8 });
+        const stored = listStoredCodexJobs(dir, { sessionId: sessionIdOf(exec), limit: STATUS_LIST_LIMIT });
         if (stored.length > 0) {
           return {
             text: `${text}\n\n${renderStoredCodexJobList(stored, {
@@ -500,29 +484,14 @@ export function createOperations({ ctx, runner, config = {} }) {
           return { text: renderStoredCodexJob(stored) };
         }
       }
-      let result;
-      try {
-        result = await fast(exec, resultArgv({ cwd, jobId: args.job_id }), cwd);
-      } catch (error) {
-        const fallback = storedResultFallback(dir, args.job_id, sessionIdOf(exec));
-        if (fallback) {
-          return fallback;
-        }
-        throw error;
-      }
-      if (result.code !== 0) {
-        const fallback = storedResultFallback(dir, args.job_id, sessionIdOf(exec));
-        if (fallback) {
-          return fallback;
-        }
-        assertOk("result", result);
-      }
-      return { text: cleanOutput(result.stdout) };
+      const argv = resultArgv({ cwd, jobId: args.job_id });
+      const { stored: fallback, result } = await queryWithStoredFallback(exec, "result", argv, cwd, () =>
+        storedResultFallback(dir, args.job_id, sessionIdOf(exec))
+      );
+      return fallback ?? { text: cleanOutput(result.stdout) };
     },
 
-    async setup(exec, args = {}) {
-      return setup(exec, args);
-    },
+    setup,
 
     async cancel(exec, args = {}) {
       const cwd = resolveCwd(exec, args.cwd);
@@ -579,7 +548,7 @@ export function createOperations({ ctx, runner, config = {} }) {
         if (skipCompanionCancel) {
           throw new Error("handled by the job cancel hook");
         }
-        const result = await fast(
+        const result = await runDirect(
           exec,
           cancelArgv({ cwd: targetCwd, jobId: targetId ?? undefined }),
           targetCwd

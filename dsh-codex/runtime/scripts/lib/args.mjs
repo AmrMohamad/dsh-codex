@@ -25,7 +25,12 @@ export function parseArgs(argv, config = {}) {
     }
 
     if (token.startsWith("--")) {
-      const [rawKey, inlineValue] = token.slice(2).split("=", 2);
+      // Split on the first `=` only: `--base=a=b` keeps the value `a=b`
+      // (upstream openai/codex-plugin-cc#807).
+      const body = token.slice(2);
+      const separator = body.indexOf("=");
+      const rawKey = separator === -1 ? body : body.slice(0, separator);
+      const inlineValue = separator === -1 ? undefined : body.slice(separator + 1);
       const key = aliasMap[rawKey] ?? rawKey;
 
       if (booleanOptions.has(key)) {

@@ -7,21 +7,17 @@ import { test } from "node:test";
 
 import {
   adversarialReviewArgv,
-  buildChildEnv,
   cancelArgv,
-  cleanOutput,
-  createRunner,
-  removePromptFile,
-  resolveCodex,
-  resolveDataDir,
-  resolveNode,
   resultArgv,
   reviewArgv,
   setupArgv,
   statusArgv,
-  taskArgv,
-  writePromptFile
-} from "../lib/runtime.js";
+  taskArgv
+} from "../lib/argv.js";
+import { buildChildEnv, removePromptFile, writePromptFile } from "../lib/process.js";
+import { resolveCodex, resolveDataDir, resolveNode } from "../lib/resolve.js";
+import { createRunner } from "../lib/runtime.js";
+import { cleanOutput } from "../lib/text.js";
 import { chunksToText } from "../lib/jobs.js";
 
 test("companion argument builders pin --cwd and forward options", () => {

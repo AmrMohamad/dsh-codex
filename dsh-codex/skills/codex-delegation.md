@@ -1,6 +1,6 @@
 ---
 name: codex-delegation
-description: How to hand work to the OpenAI Codex CLI from DeepSeek Harness and compose prompts Codex executes well.
+description: How to hand work to the OpenAI Codex CLI from DeepSeek Harness and write task briefs Codex executes well.
 ---
 
 # Delegating to Codex
@@ -24,35 +24,45 @@ Background: pass `background: true` for anything larger than a tiny diff. You th
 Harness background job id; read it with `job_output`, cancel with `job_kill`, and you are
 notified on completion. Do not busy-poll, sleep, or duplicate the running work.
 
-## Prompt composition
+## Writing the task brief
 
-Prompt Codex like an operator, not a collaborator: one clear task per run, a stated
-definition of done, and only the constraints that matter. Prefer better prompt contracts
-over raising reasoning effort. Use stable XML-ish tags when the answer must be structured.
+Codex starts with the repository but none of this conversation. The quality of its
+answer is capped by the brief, so spend a few sentences on it. The plugin wraps every
+`codex_rescue` task in a fixed envelope (access rules, working rules, and the report
+format), so the brief only carries the substance:
 
-Default blocks:
+```text
+Goal: <the outcome you need, in one sentence>
+Context: <what Codex cannot find quickly: relevant files, the exact error or failing
+         output, how to reproduce, what you already tried or ruled out>
+Constraints: <what must not change, conventions, scope limits>
+Done when: <the observable result: a test that passes, a question answered, a diff>
+```
 
-- `<task>`: the concrete job plus relevant repository/failure context. State the working
-  directory if it differs from the session directory.
-- `<output_contract>`: exact shape, ordering, and brevity. Ask for findings ordered by
-  severity with file:line references for reviews; for implementation, ask for touched
-  files and a verification summary.
-- `<follow_through_policy>`: what Codex should do instead of asking routine questions
-  (for example: keep going, make the smallest safe patch, and report assumptions).
-- `<verification_loop>`: required for fixes and risky changes. Ask Codex to run the
-  relevant tests or checks and to say what it ran.
-- `<grounding_rules>`: required for reviews and research. Claims must point at observed
-  evidence; label hypotheses as hypotheses; never invent file paths.
+Good brief:
 
-When to add blocks:
+```text
+Goal: find why GET /orders?page=2 returns page 1 again.
+Context: src/api/orders.ts builds the query; src/db/paginate.ts computes offsets.
+`npm test -- orders` fails: "expected id 11, got 1". Started after commit a1b2c3d.
+I ruled out caching: the bug reproduces with CACHE_DISABLED=1.
+Constraints: keep the public paginate() signature.
+Done when: root cause with file:line, and a fix as a diff.
+```
 
-- Coding/debugging: `completeness_contract`, `verification_loop`, `missing_context_gating`.
-- Review/adversarial review: `grounding_rules`, `structured_output_contract`, `dig_deeper_nudge`.
-- Research/recommendation: `research_mode`, `citation_rules`.
-- Write-capable tasks: `action_safety` (stay narrow, no unrelated refactors).
+Weak brief: "pagination is broken, please look". Codex then spends its run rediscovering
+what you already know, and may investigate the wrong layer.
 
-Only tighten the prompt when the request is genuinely ambiguous. Do not rewrite the user's
-intent, and do not paste the whole repository into the prompt.
+Rules:
+
+- One task per run. Split unrelated questions into separate runs, or background jobs.
+- Paste exact error text and command output; do not paraphrase them.
+- Do not ask for a report format, a plan, or progress updates: the envelope defines the
+  report, and asking for upfront plans makes Codex stop early.
+- Prefer a sharper brief over a higher `effort`. Raise `effort` only for genuinely hard
+  problems.
+- For `codex_adversarial_review`, put the decision or risk to challenge in `focus`, plus
+  context the repository does not show (requirements, expected load, constraints).
 
 ## Communication contract
 
@@ -60,8 +70,8 @@ intent, and do not paste the whole repository into the prompt.
   text. Use `--` when the text itself starts with dashes.
 - Pass `cwd` explicitly when the target differs from the session directory; relative
   paths resolve against the session directory.
-- One self-contained task per Codex run, with the expected output shape. Do not ask
-  Codex to re-derive facts you can check locally faster.
+- One self-contained task per Codex run. Do not ask Codex to re-derive facts you can
+  check locally faster.
 - Foreground results end with `Codex session:` and a `codex resume <id>` line. Continue
   that thread with `resume_last: true`; do not start a fresh thread for a follow-up.
 - Prefer `background: true` for anything larger than a tiny diff, then collect with
@@ -80,8 +90,9 @@ use `resume_last: true` and send only the delta instruction instead of restating
 ## Result rules
 
 Report Codex output faithfully. Preserve verdict, severity order, file paths, and any
-uncertainty markers. If Codex made edits, say so and list the touched files it reported.
-If the run failed or Codex is not authenticated, report the failure and point at
-`codex_setup`; never fabricate a substitute answer.
+uncertainty markers. If Codex made edits, say so and list the files it edited. If the
+run failed or Codex is not authenticated, report the failure and point at
+`codex_setup`; never fabricate a substitute answer. The `codex-result-handling` skill
+explains how to read and act on each result format.
 
 _Adapted from the OpenAI Codex plugin for Claude Code (Apache-2.0)._

@@ -92,7 +92,7 @@ function buildTurnInput(prompt) {
   return [{ type: "text", text: prompt, text_elements: [] }];
 }
 
-function shorten(text, limit = 72) {
+export function shorten(text, limit = 72) {
   const normalized = String(text ?? "").trim().replace(/\s+/g, " ");
   if (!normalized) {
     return "";
@@ -100,7 +100,14 @@ function shorten(text, limit = 72) {
   if (normalized.length <= limit) {
     return normalized;
   }
-  return `${normalized.slice(0, limit - 3)}...`;
+  // Never cut a UTF-16 surrogate pair: the app-server drops a request carrying
+  // a lone surrogate without replying, so `thread/name/set` hung the task
+  // (upstream openai/codex-plugin-cc#793).
+  let end = limit - 3;
+  if (/[\uD800-\uDBFF]/.test(normalized[end - 1] ?? "")) {
+    end -= 1;
+  }
+  return `${normalized.slice(0, end)}...`;
 }
 
 function looksLikeVerificationCommand(command) {
@@ -320,6 +327,7 @@ function createTurnCaptureState(threadId, options = {}) {
     threadTurnIds: new Map(),
     threadLabels: new Map(),
     turnId: null,
+    startResolved: false,
     bufferedNotifications: [],
     completion,
     resolveCompletion,
@@ -540,6 +548,12 @@ function applyTurnNotification(state, message) {
       }
       break;
     case "error":
+      // `willRetry: true` marks a transient error Codex retries by itself
+      // (for example a stream reconnect); only a final error decides the turn.
+      if (message.params.willRetry === true) {
+        emitProgress(state.onProgress, `Codex retrying after: ${message.params.error?.message ?? "error"}`, null);
+        break;
+      }
       state.error = message.params.error;
       emitProgress(state.onProgress, `Codex error: ${message.params.error.message}`, "failed");
       break;
@@ -579,12 +593,13 @@ function rejectOnTransportExit(client, threadId) {
   });
 }
 
-async function captureTurn(client, threadId, startRequest, options = {}) {
+/** Exported for tests. */
+export async function captureTurn(client, threadId, startRequest, options = {}) {
   const state = createTurnCaptureState(threadId, options);
   const previousHandler = client.notificationHandler;
 
   client.setNotificationHandler((message) => {
-    if (!state.turnId) {
+    if (!state.startResolved) {
       state.bufferedNotifications.push(message);
       return;
     }
@@ -621,6 +636,12 @@ async function captureTurn(client, threadId, startRequest, options = {}) {
       }
     }
     state.bufferedNotifications.length = 0;
+    // Some app-server builds omit `turn.id` from the start response. Recover it
+    // from the buffered `turn/started` notification and stop buffering; keying
+    // the buffer on `turnId` swallowed every later notification, including
+    // `turn/completed`, so the run hung (upstream openai/codex-plugin-cc#781).
+    state.turnId ??= state.threadTurnIds.get(state.threadId) ?? null;
+    state.startResolved = true;
 
     if (response.turn?.status && response.turn.status !== "inProgress") {
       completeTurn(state, response.turn);
@@ -781,8 +802,17 @@ async function resumeThread(client, threadId, cwd, options = {}) {
   return client.request("thread/resume", buildResumeParams(threadId, cwd, options));
 }
 
-function buildResultStatus(turnState) {
-  return turnState.finalTurn?.status === "completed" ? 0 : 1;
+/** Exported for tests. */
+export function buildResultStatus(turnState) {
+  if (turnState.finalTurn?.status !== "completed") {
+    return 1;
+  }
+  // A fatal `error` notification (for example a usage limit) can be followed
+  // by an ordinary `turn/completed` (openai/codex#47728). A turn that ended
+  // that way with no output failed; reporting success hid the error behind
+  // "completed without any output".
+  const producedOutput = Boolean(turnState.lastAgentMessage || turnState.reviewText);
+  return turnState.error && !producedOutput ? 1 : 0;
 }
 
 const BUILTIN_PROVIDER_LABELS = new Map([
@@ -1138,7 +1168,7 @@ export async function runAppServerReview(cwd, options = {}) {
       reviewText: turnState.reviewText,
       reasoningSummary: turnState.reasoningSummary,
       turn: turnState.finalTurn,
-      error: turnState.error,
+      error: turnState.error ?? turnState.finalTurn?.error ?? null,
       stderr: cleanCodexStderr(client.stderr)
     };
   });
@@ -1239,7 +1269,7 @@ export async function runAppServerTurn(cwd, options = {}) {
       finalMessage: turnState.lastAgentMessage,
       reasoningSummary: turnState.reasoningSummary,
       turn: turnState.finalTurn,
-      error: turnState.error,
+      error: turnState.error ?? turnState.finalTurn?.error ?? null,
       stderr: cleanCodexStderr(client.stderr),
       fileChanges: turnState.fileChanges,
       touchedFiles: collectTouchedFiles(turnState.fileChanges),

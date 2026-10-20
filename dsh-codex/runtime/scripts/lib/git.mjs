@@ -5,6 +5,10 @@ import { isProbablyText } from "./fs.mjs";
 import { formatCommandFailure, runCommand, runCommandChecked } from "./process.mjs";
 
 const MAX_UNTRACKED_BYTES = 24 * 1024;
+// Total inline budget for untracked file bodies. Without it, a repository with
+// many untracked files (an unignored build or vendor directory) put megabytes
+// into the review prompt.
+const MAX_UNTRACKED_TOTAL_BYTES = 64 * 1024;
 const DEFAULT_INLINE_DIFF_MAX_FILES = 2;
 const DEFAULT_INLINE_DIFF_MAX_BYTES = 256 * 1024;
 
@@ -15,6 +19,15 @@ function git(cwd, args, options = {}) {
 
 function gitChecked(cwd, args, options = {}) {
   return runCommandChecked("git", args, { cwd, ...options, shell: false });
+}
+
+/**
+ * Run a git command that prints paths and return them unquoted. `-z` gives
+ * NUL-separated raw paths; the default output quotes non-ASCII names
+ * ("caf\303\251.js"), which then cannot be read from disk (upstream #812).
+ */
+function gitPathList(cwd, args) {
+  return gitChecked(cwd, args).stdout.split("\0").filter(Boolean);
 }
 
 function listUniqueFiles(...groups) {
@@ -120,9 +133,9 @@ export function getCurrentBranch(cwd) {
 }
 
 export function getWorkingTreeState(cwd) {
-  const staged = gitChecked(cwd, ["diff", "--cached", "--name-only"]).stdout.trim().split("\n").filter(Boolean);
-  const unstaged = gitChecked(cwd, ["diff", "--name-only"]).stdout.trim().split("\n").filter(Boolean);
-  const untracked = gitChecked(cwd, ["ls-files", "--others", "--exclude-standard"]).stdout.trim().split("\n").filter(Boolean);
+  const staged = gitPathList(cwd, ["diff", "--cached", "--name-only", "-z"]);
+  const unstaged = gitPathList(cwd, ["diff", "--name-only", "-z"]);
+  const untracked = gitPathList(cwd, ["ls-files", "--others", "--exclude-standard", "-z"]);
 
   return {
     staged,
@@ -191,7 +204,10 @@ export function resolveReviewTarget(cwd, options = {}) {
 }
 
 function formatSection(title, body) {
-  return [`## ${title}`, "", body.trim() ? body.trim() : "(none)", ""].join("\n");
+  // Only trim the end: leading spaces are meaningful in `git status --short`
+  // (" M file" means unstaged-only) (upstream #813).
+  const text = body.trimEnd();
+  return [`## ${title}`, "", text.trim() ? text : "(none)", ""].join("\n");
 }
 
 function formatUntrackedFile(cwd, relativePath) {
@@ -239,16 +255,34 @@ function formatUntrackedFile(cwd, relativePath) {
   return [`### ${relativePath}`, "```", buffer.toString("utf8").trimEnd(), "```"].join("\n");
 }
 
+function formatUntrackedFiles(cwd, files) {
+  const sections = [];
+  let used = 0;
+  for (let index = 0; index < files.length; index += 1) {
+    if (used >= MAX_UNTRACKED_TOTAL_BYTES) {
+      sections.push(
+        `(${files.length - index} more untracked file(s) not inlined: the ${MAX_UNTRACKED_TOTAL_BYTES} byte ` +
+          "untracked context budget is used. List them with `git ls-files --others --exclude-standard` and read them directly.)"
+      );
+      break;
+    }
+    const section = formatUntrackedFile(cwd, files[index]);
+    used += Buffer.byteLength(section, "utf8");
+    sections.push(section);
+  }
+  return sections.join("\n\n");
+}
+
 function collectWorkingTreeContext(cwd, state, options = {}) {
   const includeDiff = options.includeDiff !== false;
-  const status = gitChecked(cwd, ["status", "--short", "--untracked-files=all"]).stdout.trim();
+  const status = gitChecked(cwd, ["-c", "core.quotePath=false", "status", "--short", "--untracked-files=all"]).stdout.trimEnd();
   const changedFiles = listUniqueFiles(state.staged, state.unstaged, state.untracked);
 
   let parts;
   if (includeDiff) {
     const stagedDiff = gitChecked(cwd, ["diff", "--cached", "--binary", "--no-ext-diff", "--submodule=diff"]).stdout;
     const unstagedDiff = gitChecked(cwd, ["diff", "--binary", "--no-ext-diff", "--submodule=diff"]).stdout;
-    const untrackedBody = state.untracked.map((file) => formatUntrackedFile(cwd, file)).join("\n\n");
+    const untrackedBody = formatUntrackedFiles(cwd, state.untracked);
     parts = [
       formatSection("Git Status", status),
       formatSection("Staged Diff", stagedDiff),
@@ -258,7 +292,7 @@ function collectWorkingTreeContext(cwd, state, options = {}) {
   } else {
     const stagedStat = gitChecked(cwd, ["diff", "--shortstat", "--cached"]).stdout.trim();
     const unstagedStat = gitChecked(cwd, ["diff", "--shortstat"]).stdout.trim();
-    const untrackedBody = state.untracked.map((file) => formatUntrackedFile(cwd, file)).join("\n\n");
+    const untrackedBody = formatUntrackedFiles(cwd, state.untracked);
     parts = [
       formatSection("Git Status", status),
       formatSection("Staged Diff Stat", stagedStat),
@@ -280,7 +314,7 @@ function collectBranchContext(cwd, baseRef, options = {}) {
   const includeDiff = options.includeDiff !== false;
   const comparison = options.comparison ?? buildBranchComparison(cwd, baseRef);
   const currentBranch = getCurrentBranch(cwd);
-  const changedFiles = gitChecked(cwd, ["diff", "--name-only", comparison.commitRange]).stdout.trim().split("\n").filter(Boolean);
+  const changedFiles = gitPathList(cwd, ["diff", "--name-only", "-z", comparison.commitRange]);
   const logOutput = gitChecked(cwd, ["log", "--oneline", "--decorate", comparison.commitRange]).stdout.trim();
   const diffStat = gitChecked(cwd, ["diff", "--stat", comparison.commitRange]).stdout.trim();
 
@@ -340,7 +374,7 @@ export function collectReviewContext(cwd, target, options = {}) {
     details = collectWorkingTreeContext(repoRoot, state, { includeDiff });
   } else {
     const comparison = buildBranchComparison(repoRoot, target.baseRef);
-    const fileCount = gitChecked(repoRoot, ["diff", "--name-only", comparison.commitRange]).stdout.trim().split("\n").filter(Boolean).length;
+    const fileCount = gitPathList(repoRoot, ["diff", "--name-only", "-z", comparison.commitRange]).length;
     diffBytes = measureGitOutputBytes(
       repoRoot,
       ["diff", "--binary", "--no-ext-diff", "--submodule=diff", comparison.commitRange],

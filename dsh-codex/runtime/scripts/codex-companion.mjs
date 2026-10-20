@@ -23,7 +23,7 @@ import {
 import { readStdinIfPiped } from "./lib/fs.mjs";
 import { collectReviewContext, ensureGitRepository, resolveReviewTarget } from "./lib/git.mjs";
 import { binaryAvailable, terminateProcessTree } from "./lib/process.mjs";
-import { loadPromptTemplate, interpolateTemplate } from "./lib/prompts.mjs";
+import { buildAdversarialReviewPrompt, buildTaskPrompt } from "./lib/prompts.mjs";
 import { generateJobId, listJobs, upsertJob, writeJobFile } from "./lib/state.mjs";
 import {
   buildSingleJobSnapshot,
@@ -45,6 +45,7 @@ import {
 } from "./lib/tracked-jobs.mjs";
 import { resolveWorkspaceRoot } from "./lib/workspace.mjs";
 import {
+  firstMeaningfulLine,
   renderNativeReviewResult,
   renderReviewResult,
   renderStoredJobResult,
@@ -61,7 +62,6 @@ const DEFAULT_STATUS_WAIT_TIMEOUT_MS = 240000;
 const DEFAULT_STATUS_POLL_INTERVAL_MS = 2000;
 const VALID_REASONING_EFFORTS = new Set(["none", "minimal", "low", "medium", "high", "xhigh"]);
 const MODEL_ALIASES = new Map([["spark", "gpt-5.3-codex-spark"]]);
-const STOP_REVIEW_TASK_MARKER = "Run a stop-gate review of the previous Claude turn.";
 
 function printUsage() {
   console.log(
@@ -158,15 +158,14 @@ function shorten(text, limit = 96) {
   if (normalized.length <= limit) {
     return normalized;
   }
-  return `${normalized.slice(0, limit - 3)}...`;
-}
-
-function firstMeaningfulLine(text, fallback) {
-  const line = String(text ?? "")
-    .split(/\r?\n/)
-    .map((value) => value.trim())
-    .find(Boolean);
-  return line ?? fallback;
+  // Never cut a UTF-16 surrogate pair: the app-server drops a request carrying
+  // a lone surrogate without replying, so `thread/name/set` hung the task
+  // (upstream openai/codex-plugin-cc#793).
+  let end = limit - 3;
+  if (/[\uD800-\uDBFF]/.test(normalized[end - 1] ?? "")) {
+    end -= 1;
+  }
+  return `${normalized.slice(0, end)}...`;
 }
 
 async function buildSetupReport(cwd, actionsTaken = []) {
@@ -219,17 +218,6 @@ async function handleSetup(argv) {
 
   const finalReport = await buildSetupReport(cwd, actionsTaken);
   outputResult(options.json ? finalReport : renderSetupReport(finalReport), options.json);
-}
-
-function buildAdversarialReviewPrompt(context, focusText) {
-  const template = loadPromptTemplate(ROOT_DIR, "adversarial-review");
-  return interpolateTemplate(template, {
-    REVIEW_KIND: "Adversarial Review",
-    TARGET_LABEL: context.target.label,
-    USER_FOCUS: focusText || "No extra focus provided.",
-    REVIEW_COLLECTION_GUIDANCE: context.collectionGuidance,
-    REVIEW_INPUT: context.content
-  });
 }
 
 function ensureCodexAvailable(cwd) {
@@ -369,7 +357,8 @@ async function executeReviewRun(request) {
       {
         status: result.status,
         stdout: result.reviewText,
-        stderr: result.stderr
+        stderr: result.stderr,
+        errorMessage: result.error?.message ?? null
       },
       { reviewLabel: reviewName, targetLabel: target.label, reasoningSummary: result.reasoningSummary }
     );
@@ -380,7 +369,10 @@ async function executeReviewRun(request) {
       turnId: result.turnId,
       payload,
       rendered,
-      summary: firstMeaningfulLine(result.reviewText, `${reviewName} completed.`),
+      summary: firstMeaningfulLine(
+        result.reviewText,
+        result.status === 0 ? `${reviewName} completed.` : result.error?.message ?? `${reviewName} failed.`
+      ),
       jobTitle: `Codex ${reviewName}`,
       jobClass: "review",
       targetLabel: target.label
@@ -463,10 +455,11 @@ async function executeTaskRun(request) {
     throw new Error("Provide a prompt, a prompt file, piped stdin, or use --resume-last.");
   }
 
+  // The caller's text goes to Codex verbatim inside the task envelope, which
+  // adds the access rules and the handoff-report contract (prompts/task.md).
   const result = await runAppServerTurn(workspaceRoot, {
     resumeThreadId,
-    prompt: request.prompt,
-    defaultPrompt: resumeThreadId ? DEFAULT_CONTINUE_PROMPT : "",
+    prompt: buildTaskPrompt({ task: request.prompt || DEFAULT_CONTINUE_PROMPT, write: Boolean(request.write) }),
     model: request.model,
     effort: request.effort,
     sandbox: request.write ? "workspace-write" : "read-only",
@@ -520,13 +513,6 @@ function buildReviewJobMetadata(reviewName, target) {
 }
 
 function buildTaskRunMetadata({ prompt, resumeLast = false }) {
-  if (!resumeLast && String(prompt ?? "").includes(STOP_REVIEW_TASK_MARKER)) {
-    return {
-      title: "Codex Stop Gate Review",
-      summary: "Stop-gate review of previous Claude turn"
-    };
-  }
-
   const title = resumeLast ? "Codex Resume" : "Codex Task";
   const fallbackSummary = resumeLast ? DEFAULT_CONTINUE_PROMPT : "Task";
   return {
